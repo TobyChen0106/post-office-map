@@ -1,7 +1,6 @@
 import pymongo
 from bson.objectid import ObjectId
 
-
 class CardboDB:
     def __init__(self, api_key, database):
         self.client = pymongo.MongoClient(api_key)
