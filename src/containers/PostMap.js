@@ -306,13 +306,15 @@ class PostMap extends Component {
 
 
     displayMarkers = () => {
+        
         if (this.state.loading) return;
         if (this.autopan) {
             this.autopan = false;
             setTimeout(() => {
                 const map = this.mapRef.current.leafletElement;
+                const myBound = map.getBounds()
                 const markers = this.state.allMarkers.map(
-                    (m, i) => map.getBounds().contains(m.position) ? { index: m.id, position: m.position } : undefined).filter(x => x)
+                    (m, i) => map.getBounds().pad(2).contains(m.position) ? { index: m.id, position: m.position } : undefined).filter(x => x)
                 this.setState({
                     markers: markers
                 });
