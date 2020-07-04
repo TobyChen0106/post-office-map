@@ -356,8 +356,8 @@ class PostMap extends Component {
                             // autoPlay={this.props.deviceType !== "mobile" ? true : false}
                             // autoPlaySpeed={1000}
                             keyBoardControl={true}
-                            customTransition="all .5"
-                            transitionDuration={600}
+                            // customTransition="all .5"
+                            transitionDuration={800}
                             containerClass="carousel-container"
                             removeArrowOnDeviceType={["tablet", "mobile"]}
 
