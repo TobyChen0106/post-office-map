@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import { renderToString } from 'react-dom/server';
 import { withStyles } from '@material-ui/core/styles';
 import ReactLoading from 'react-loading';
 import { LatLng } from 'leaflet';
@@ -15,30 +14,20 @@ import {
     TileLayer,
     Tooltip,
 } from 'react-leaflet'
-import DivIcon from 'react-leaflet-div-icon';
-import { PostOfficeMaker } from '../components/PostOfficeMaker';
-import { UserMaker } from '../components/UserMaker';
-
+import PostOfficeMaker from '../components/PostOfficeMaker';
+import UserMaker from '../components/UserMaker';
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
-
-import iconImage from '../assets/marker.svg'
-
-
+import Parser from 'html-react-parser';
 import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
-import CardMedia from '@material-ui/core/CardMedia';
 import CardContent from '@material-ui/core/CardContent';
-import CardActions from '@material-ui/core/CardActions';
-import Collapse from '@material-ui/core/Collapse';
 import Avatar from '@material-ui/core/Avatar';
 import IconButton from '@material-ui/core/IconButton';
+import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
-import { red } from '@material-ui/core/colors';
-import FavoriteIcon from '@material-ui/icons/Favorite';
-import ShareIcon from '@material-ui/icons/Share';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
+import GpsFixedIcon from '@material-ui/icons/GpsFixed';
 
 import postOffcieImage from "../assets/post-office-icon.png"
 // Liff
@@ -47,6 +36,14 @@ const liff = window.liff;
 const useStyles = (theme) => ({
     root: {
 
+    },
+    loading: {
+        width: "100vw",
+        height: "100vh",
+        backgroundColor: "#0058a3",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
     },
     contentHolder: {
         margin: "5vw",
@@ -62,14 +59,36 @@ const useStyles = (theme) => ({
         bottom: 0,
         left: 0,
         width: "100vw",
-        height: "12rem",
+        height: "10.5rem",
         zIndex: "500",
     },
     carouselCard: {
+        // margin: "5%",
         marginLeft: "5%",
         marginRight: "5%",
         width: "90%",
+        height: "10rem",
+        overflow: "scroll",
+    },
+    gps: {
+        borderRadius: "50%",
+        backgroundColor: "#ffffff",
+        margin: "1rem",
+        width: "4rem",
+        height: "4rem",
+
+        position: "fixed",
+        bottom: "10rem",
+        right: 0,
+        zIndex: "600",
+    },
+    gpsIcon: {
+        // backgroundColor: "#ffffff",
+        width: "100%",
         height: "100%",
+        bottom: "11rem",
+        right: 0,
+        zIndex: "601",
     }
 });
 
@@ -77,48 +96,51 @@ const responsive = {
     desktop: {
         breakpoint: { max: 3000, min: 1024 },
         items: 3,
+        partialVisibilityGutter: 30
         // slidesToSlide: 3 // optional, default to 1.
     },
     tablet: {
         breakpoint: { max: 1024, min: 464 },
-        items: 2,
+        items: 1,
+        partialVisibilityGutter: 30
         // slidesToSlide: 2 // optional, default to 1.
     },
     mobile: {
         breakpoint: { max: 464, min: 0 },
         items: 1,
+        partialVisibilityGutter: 30
         // slidesToSlide: 1 // optional, default to 1.
     }
 };
 
 
 
-const responsive2 = {
-    desktop: {
-        breakpoint: {
-            max: 3000,
-            min: 1024
-        },
-        items: 3,
-        partialVisibilityGutter: 40
-    },
-    mobile: {
-        breakpoint: {
-            max: 464,
-            min: 0
-        },
-        items: 1,
-        partialVisibilityGutter: 30
-    },
-    tablet: {
-        breakpoint: {
-            max: 1024,
-            min: 464
-        },
-        items: 2,
-        partialVisibilityGutter: 30
-    }
-}
+// const responsive = {
+//     desktop: {
+//         breakpoint: {
+//             max: 3000,
+//             min: 1024
+//         },
+//         items: 3,
+//         partialVisibilityGutter: 40
+//     },
+//     mobile: {
+//         breakpoint: {
+//             max: 464,
+//             min: 0
+//         },
+//         items: 1,
+//         partialVisibilityGutter: 30
+//     },
+//     tablet: {
+//         breakpoint: {
+//             max: 1024,
+//             min: 464
+//         },
+//         items: 2,
+//         partialVisibilityGutter: 30
+//     }
+// }
 
 class PostMap extends Component {
     constructor(props) {
@@ -126,9 +148,10 @@ class PostMap extends Component {
         this.state = {
             markers: [],
             allMarkers: [],
-            userLocation: [0, 0],
-            centerLocation: [0, 0],
+            userLocation: new LatLng(25.042229, 121.5651594),
+            centerLocation: new LatLng(25.042229, 121.5651594),
             loading: true,
+            focusedMark: undefined,
         }
         this.mapRef = React.createRef();
         this.autopan = true;
@@ -277,24 +300,34 @@ class PostMap extends Component {
                     userLocation: new LatLng(success.coords.latitude, success.coords.longitude),
                     centerLocation: new LatLng(success.coords.latitude, success.coords.longitude),
                 });
-
-
-
                 var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
                     function compareDistnace(a, b) {
                         return (Math.pow(success.coords.latitude - a.position.lat, 2) + Math.pow(success.coords.longitude - a.position.lng, 2))
                             - (Math.pow(success.coords.latitude - b.position.lat, 2) + Math.pow(success.coords.longitude - b.position.lng, 2));
                     }
                 );
-                this.setState(
-                    { allMarkers: allMarkers, loading: false },
-                    this.displayMarkers
-                );
 
-                console.log([success.coords.latitude, success.coords.longitude])
+                this.setState(
+                    { allMarkers: allMarkers },
+                    () => {
+                        this.displayMarkers();
+                        this.setState({ loading: false });
+                    }
+                );
             },
             error => {
                 alert(`無法取得使用者位置: ${error.code} : ${error.message}`);
+            },
+            { enableHighAccuracy: true, maximumAge: 10000 }
+        );
+
+        window.navigator.geolocation.watchPosition(
+            success => {
+                this.setState({
+                    userLocation: new LatLng(success.coords.latitude, success.coords.longitude),
+                });
+            },
+            error => {
             },
             { enableHighAccuracy: true, maximumAge: 10000 }
         );
@@ -306,87 +339,110 @@ class PostMap extends Component {
 
 
     displayMarkers = () => {
-        
         if (this.state.loading) return;
         if (this.autopan) {
             this.autopan = false;
             setTimeout(() => {
                 const map = this.mapRef.current.leafletElement;
-                const myBound = map.getBounds()
                 const markers = this.state.allMarkers.map(
-                    (m, i) => map.getBounds().pad(2).contains(m.position) ? { index: m.id, position: m.position } : undefined).filter(x => x)
+                    (m, i) => map.getBounds().pad(0).contains(m.position) ? { index: m.id, position: m.position } : undefined).filter(x => x);
                 this.setState({
-                    markers: markers
+                    markers: markers,
                 });
+                if (!this.state.focusedMark || markers.findIndex(m => m.index === this.state.focusedMark) === -1) {
+                    this.setState({
+                        focusedMark: markers[0].index
+                    });
+                }
                 this.autopan = true;
             }, 200)
         }
     }
 
     onCarouselChange = (currentSlide) => {
-
+        var id = currentSlide -2;
+        if (id < 0) {
+            id = this.state.markers.length + id
+        } 
+        this.setState(pre => {
+            return ({
+                focusedMark: pre.markers[id].index
+            })
+        });
     }
 
-    handleMarkerClick = (e) => {
-        // this.setState({ centerLocation: e.latlng })
+    handleMarkerClick = (id) => {
+        this.setState(pre => {
+            return ({
+                focusedMark: id
+            })
+        });
     }
 
-    // onautopanstart = () => {
-    //     console.log("autopan")
-    //     this.autopan = true
-    // }
+    handleGps = () => {
+        const map = this.mapRef.current.leafletElement;
+        map.flyTo(this.state.userLocation, 15);
+        // this.setState({centerLocation: this.state.userLocation });
+
+    }
 
     render() {
-
         const { classes } = this.props;
-        const coordinates = this.state.position;
 
-        const markers = this.state.markers.map((i, id) => (
-            <Marker position={i.position} onClick={this.handleMarkerClick}>
-                <Popup>
-                    <span>
-                        {this.state.postData[i.index].storeNm}<br />{`三倍券存量: ${this.state.postData[i.index].total}`}
-                    </span>
-                </Popup>
-            </Marker>
-        ));
+        const markers = this.state.markers.map((i, id) => {
+            const makerIcon = PostOfficeMaker(this.state.postData[i.index].total, this.state.postData[i.index].people, i.index === this.state.focusedMark ? "#AA3939" : undefined);
+            return (
+                <Marker
+                    id={`m-${this.state.postData[i.index].storeCd}`}
+                    position={i.position}
+                    onClick={(e) => this.handleMarkerClick(i.index)}
+                    icon={makerIcon}
+                    key={`${id}`}>
+                    <Popup>
+                        <span>
+                            {this.state.postData[i.index].storeNm}
+                        </span>
+                    </Popup>
+                </Marker>
+            )
+        });
 
-        const carouselCards = this.state.markers.map((i, id) => (
-            <Card className={classes.carouselCard}>
-                <CardHeader
-                    avatar={
-                        <Avatar aria-label="中華郵政" className={classes.avatar} src={postOffcieImage}>
-                            郵
-                        </Avatar>
-                    }
-                    action={
-                        <IconButton aria-label="settings">
-                            <MoreVertIcon />
-                        </IconButton>
-                    }
-                    title={this.state.postData[i.index].storeNm}
-                    subheader={this.state.postData[i.index].addr}
-                />
-                <CardMedia
-                    className={classes.media}
-                    image="/static/images/cards/paella.jpg"
-                    title="Paella dish"
-                />
-                <CardContent>
-                    <Typography variant="body2" color="textSecondary" component="p">
-                        hi<br />
-                        hi<br />
+        const carouselCards = this.state.markers.map((i, id) => {
+            const memo = this.state.postData[i.index].busiMemo ? Parser("備註: " + this.state.postData[i.index].busiMemo) : undefined;
+            return (
+                <Card className={classes.carouselCard} key={`${id}`}>
+                    <CardHeader
+                        avatar={
+                            <Avatar aria-label="中華郵政" className={classes.avatar} src={postOffcieImage}>
+                                郵
+                            </Avatar>
+                        }
+                        action={
+                            <IconButton aria-label="settings">
+                                <MoreVertIcon />
+                            </IconButton>
+                        }
+                        title={this.state.postData[i.index].storeNm}
+                        subheader={Parser(this.state.postData[i.index].busiTime)}
+                    />
+                    <CardContent>
 
-                    </Typography>
-                </CardContent>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            {`三倍券存量: ${this.state.postData[i.index].total}  等待人數: ${10}`}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            {memo}
+                        </Typography>
+                    </CardContent>
 
-            </Card>
-        ));
+                </Card>
+            )
+        });
 
         if (this.state.loading) {
             return (
-                <div className="my-loading">
-                    <ReactLoading type={'spinningBubbles'} color={'#0058a3'} height={'5rem'} width={'5rem'} />
+                <div className={classes.loading}>
+                    <ReactLoading type={'cubes'} color={'#ffffff'} height={'90vw'} width={'90vw'} />
                 </div>
             );
         }
@@ -395,7 +451,7 @@ class PostMap extends Component {
                 <>
                     <Map
                         autopanstart={this.onautopanstart}
-                        onMoveEnd={this.displayMarkers}
+                        onMoveEnd={() => this.displayMarkers(false)}
                         ref={this.mapRef}
                         center={this.state.centerLocation}
                         zoom={15}
@@ -408,7 +464,7 @@ class PostMap extends Component {
                             attribution="&amp;copy <a href=&quot;https:www.cardbo.info&quot;>卡伯 </a> 提供"
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
-                        <Marker position={this.state.userLocation} >
+                        <Marker position={this.state.userLocation} icon={UserMaker} zIndexOffset={10000}>
                             <Popup>
                                 <span>
                                     {`您現在的位置`}
@@ -418,6 +474,9 @@ class PostMap extends Component {
                         </Marker>
                         {markers}
                     </Map>
+                    <Button className={classes.gps} variant="contained" disableFocusRipple={true} onClick={this.handleGps}>
+                        <GpsFixedIcon className={classes.gpsIcon} />
+                    </Button >
                     <div className={classes.carouselHolder}>
                         <Carousel
                             style={{ height: "100%" }}
@@ -431,7 +490,7 @@ class PostMap extends Component {
                             // autoPlaySpeed={1000}
                             keyBoardControl={true}
                             customTransition="all .5"
-                            transitionDuration={500}
+                            transitionDuration={600}
                             containerClass="carousel-container"
                             removeArrowOnDeviceType={["tablet", "mobile"]}
 

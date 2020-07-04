@@ -1,15 +1,32 @@
 import L from 'leaflet';
+import './marker.css';
 
-const UserMaker = new L.Icon({
-    iconUrl: require('../assets/marker(1).svg'),
-    iconRetinaUrl: require('../assets/logo_svg.svg'),
-    iconAnchor: new L.point(30,30),
-    popupAnchor: new L.point(0,0),
-    shadowUrl: null,
-    shadowSize: null,
-    shadowAnchor: null,
-    iconSize: new L.Point(60, 60),
-    className: 'leaflet-div-icon'
-});
 
-export { UserMaker };
+const myCustomColour = '#56b2f0'
+const myDotColour = '#ffffff'
+
+const markerHtmlStyles =
+  `
+  background-color: ${myCustomColour};
+  width: 24px;
+  height: 24px;
+  display: block;
+  left: -30px;
+  top: -30px;
+  position: relative;
+  border-radius: 50%;
+
+  border: 4px solid #FFFFFF;
+  box-shadow: 0 0 0.5rem 0.8rem rgba(86, 178, 240, 0.5);
+  `
+
+const PostOfficeMaker = new L.divIcon({
+    className: "my-custom-pin",
+    iconAnchor: [-16, -16],
+    labelAnchor: [0, 0],
+    popupAnchor: [0, -36],
+    html:
+        `<span style="${markerHtmlStyles}" />`
+})
+
+export default PostOfficeMaker;

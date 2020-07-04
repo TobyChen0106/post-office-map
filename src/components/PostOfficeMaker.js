@@ -1,23 +1,109 @@
 import L from 'leaflet';
 import './marker.css';
-import iconImage from '../assets/marker.svg'
-import DivIcon from 'react-leaflet-div-icon';
 
-const PostOfficeMaker = new L.DivIcon({
-    html: `
-    <div>
-        <span class="my-div-span">RAF Banff Airfield</span>
-    </div>
-    `,
-    // iconUrl: require('../assets/marker.svg'),
-    // iconRetinaUrl: require('../assets/marker.svg'),
-    iconAnchor: new L.point(30, 75),
-    popupAnchor: new L.point(0, 0),
-    shadowUrl: null,
-    shadowSize: null,
-    shadowAnchor: null,
-    iconSize: new L.Point(30, 30),
-    // className: 'leaflet-div-icon'
-});
+import k from "../assets/3k.svg"
+import p from "../assets/people.svg"
 
-export default  PostOfficeMaker;
+const myCustomColour = '#0058a3'
+const myDotColour = '#ffffff'
+const textDivColor = "#ffffff"
+const markerHtmlStyles = (color) => {
+    return (`
+        background-color: ${color};
+        width: 40px;
+        height: 40px;
+        display: block;
+        left: -30px;
+        top: -30px;
+        position: relative;
+        border-radius: 40px 40px 0;
+        transform: rotate(45deg);
+        border: 2px solid #FFFFFF;
+        box-shadow: 4px -10px 12px rgba(0, 0, 0, 0.5);
+ `)
+}
+
+const markerDotLeftStyles = `
+  background-color: ${myDotColour};
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  position: absolute;
+  top: 18px;
+  left: 6px;
+  `
+const markerDotRightStyles = `
+  background-color: ${myDotColour};
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  position: absolute;
+  top: -12px;
+  left: 12px;
+  `
+const totalHolder = `
+    height: 20px;
+    position: absolute;
+    top: -26px;
+    left: 4px;
+    transform: rotate(-45deg);
+    transform-origin: top left;
+
+    display: flex;
+    background-color: ${textDivColor};
+    border-radius: 20%;
+    border: 2px solid #FFFFFF;
+    padding-right: 4px;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 0 6px 4px rgba(0, 0, 0, 0.5);
+`
+const kImage = `
+    width: 20px;
+    height: 20px;
+ `
+
+const peopleHolder = `
+    height: 20px;
+    position: absolute;
+    top: 0;
+    left: 30px;
+    transform: rotate(-45deg);
+    transform-origin: top left;
+
+    display: flex;
+    background-color: ${textDivColor};
+    border-radius: 20%;
+    border: 3px solid #FFFFFF;
+    padding-right: 4px;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 0 6px 4px rgba(0, 0, 0, 0.5);
+`
+
+const PostOfficeMaker = (total, people, color = "#0058a3") => {
+    const myStyle = markerHtmlStyles(color);
+    return (
+        new L.divIcon({
+            className: "my-custom-pin",
+            iconAnchor: [-5, 22],
+            labelAnchor: [0, 0],
+            popupAnchor: [-2, -30],
+            html:
+                `
+            <div>
+                <span style="${myStyle}" >
+                    <div className="left" style="${markerDotLeftStyles}"/>
+                    <div className="right" style="${markerDotRightStyles}"/>
+                </span>
+                <div style="${totalHolder}">
+                    <img style="${kImage}" src="${k}"/> ${total ? total : 0}
+                </div>
+                <div style="${peopleHolder}">
+                    <img style="${kImage}" src="${p}"/> ${people ? people : 0}
+                </div>
+            </div>
+            `
+        })
+    )
+}
+
+export default PostOfficeMaker;

@@ -62,7 +62,7 @@ class CardboDB:
 
 if __name__ == "__main__":
     db = CardboDB(
-        "mongodb+srv://Toby0106:dbforcardbo@cluster0-gfwld.mongodb.net/test?retryWrites=true&w=majority", "poster_api")
+        "mongodb+srv://cardbo:69541@cardbo-br3ga.gcp.mongodb.net/dbCardbo?retryWrites=true&w=majority", "dbCardbo")
 
     # insert one data => insertData(<collection>, <data_content>)  return _id
     inserted_data_id = db.insertData("test", {'test': 1, "haha": "haha"})
