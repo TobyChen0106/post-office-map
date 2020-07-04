@@ -1,9 +1,4 @@
-const User = require('../src/models/User');
-const Card = require('../src/models/Card');
-const Offer = require('../src/models/Offer');
-const Store = require('../src/models/Store');
-const Comment = require('../src/models/Comment');
-
+const PostOffice = require('../src/models/PostOffice');
 const mongoose = require('mongoose');
 const dbName = "dbCardbo"
 const usrName = "cardbo"
@@ -20,15 +15,18 @@ db.once('open', () => {
 })
 
 
-Offer.find({}, (err, data) => {
+PostOffice.find({}, (err, data) => {
     if (err) {
         console.log(err);
     }
     else if (!data) {
         console.log("[ERROR] EMPTY DATA!");
     } else {
-
-        console.log(data);
-
+        // for(var i=0; i<data.length;  ++i){
+        //     data[i].nowCalling = 10;
+        //     data[i].nowWaiting = 10;
+        //     data[i].save();
+        // }
+        console.log(data)
     }
 })

@@ -88,59 +88,34 @@ const useStyles = (theme) => ({
         height: "100%",
         bottom: "11rem",
         right: 0,
-        zIndex: "601",
+        // zIndex: "601",
+    },
+    markers: {
+        zIndex: "1000",
     }
 });
+
+
 
 const responsive = {
     desktop: {
         breakpoint: { max: 3000, min: 1024 },
         items: 3,
-        partialVisibilityGutter: 30
         // slidesToSlide: 3 // optional, default to 1.
     },
     tablet: {
         breakpoint: { max: 1024, min: 464 },
         items: 1,
-        partialVisibilityGutter: 30
         // slidesToSlide: 2 // optional, default to 1.
     },
     mobile: {
         breakpoint: { max: 464, min: 0 },
         items: 1,
-        partialVisibilityGutter: 30
         // slidesToSlide: 1 // optional, default to 1.
     }
 };
 
 
-
-// const responsive = {
-//     desktop: {
-//         breakpoint: {
-//             max: 3000,
-//             min: 1024
-//         },
-//         items: 3,
-//         partialVisibilityGutter: 40
-//     },
-//     mobile: {
-//         breakpoint: {
-//             max: 464,
-//             min: 0
-//         },
-//         items: 1,
-//         partialVisibilityGutter: 30
-//     },
-//     tablet: {
-//         breakpoint: {
-//             max: 1024,
-//             min: 464
-//         },
-//         items: 2,
-//         partialVisibilityGutter: 30
-//     }
-// }
 
 class PostMap extends Component {
     constructor(props) {
@@ -153,199 +128,87 @@ class PostMap extends Component {
             loading: true,
             focusedMark: undefined,
         }
+        this.carouselRef = React.createRef();
         this.mapRef = React.createRef();
         this.autopan = true;
     }
 
     componentWillMount = () => {
-        // const id = this.props.match.params.id;
-        // const params = new URLSearchParams(this.props.location.search);
-        // const id = params.get('id');
-        // console.log(id)
+        fetch('/api/getData').catch(function (error) {
+            console.log("[Error] " + error);
+        }).then(
+            res => res.json()
+        ).then((data) => {
+            console.log(data)
+            var postData = require('./PostData.json');
+            if (data) {
+                postData = data;
+            }
+            this.setState({
+                postData: postData
+            })
 
-        // liff.init({ liffId: '1654394004-OGgr6yb8' }).then(() => {
-        //     if (!liff.isLoggedIn()) {
-        //         liff.login({ redirectUri: ("https://share.cardbo.info/?id=" + id) });
-        //     }
-        // }).then(
-        //     () => liff.getOS()
-        // ).then(
-        //     (OS) => { this.setState({ OS: OS }) }
-        // ).then(
-        //     () => liff.getProfile()
-        // ).then((profile) => {
-        //     if (!profile.userId) {
-        //         console.log("USER ID ERROR!");
-        //     } else {
-        //         userData = {
-        //             userName: profile.displayName,
-        //             userID: profile.userId,
-        //             userImage: profile.pictureUrl,
-        //         }
-        //         this.setState({
-        //             userData: {
-        //                 userName: profile.displayName,
-        //                 userID: profile.userId,
-        //                 userImage: profile.pictureUrl,
-        //             }
-        //         });
-        //     }
-        // }).then(() => {
-        //     this.setState({
-        //         loading_user: false
-        //     })
-        // }).then(() => {
+            window.navigator.geolocation.getCurrentPosition(
+                success => {
+                    this.setState({
+                        userLocation: new LatLng(success.coords.latitude, success.coords.longitude),
+                        centerLocation: new LatLng(success.coords.latitude, success.coords.longitude),
+                    });
+                    var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
+                        function compareDistnace(a, b) {
+                            return (Math.pow(success.coords.latitude - a.position.lat, 2) + Math.pow(success.coords.longitude - a.position.lng, 2))
+                                - (Math.pow(success.coords.latitude - b.position.lat, 2) + Math.pow(success.coords.longitude - b.position.lng, 2));
+                        }
+                    );
 
-        // fetch('/api/get-offer-id/' + id).catch(function (error) {
-        //     console.log("[Error] " + error);
-        // }).then(
-        //     res => res.json()
-        // ).then((data) => {
-        //     if (data) {
-        //         this.setState({
-        //             infoData: {
-        //                 offerName: data.offerName,
-        //                 offerID: data.offerID,
-        //                 cardInfo: data.cardInfo,
-        //                 provider: data.provider,
-        //                 offerAbstract: data.offerAbstract,
-        //                 category: data.category,
-        //                 tags: data.tags,
-        //                 beginDate: data.expiration.beginDate,
-        //                 endDate: data.expiration.endDate,
-        //                 contents: data.reward.contents,
-        //             },
-        //         });
-        //     } else {
-        //         console.log("offer data not found!");
-        //     }
-        // }).then(() => {
-        //     this.setState({ loading_offer: false });
-        // });
+                    this.setState(
+                        { allMarkers: allMarkers },
+                        () => {
+                            this.displayMarkers();
+                            this.setState({ loading: false });
+                        }
+                    );
+                },
+                error => {
+                    var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
+                        function compareDistnace(a, b) {
+                            return (Math.pow(this.state.userLocation.lat - a.position.lat, 2) + Math.pow(this.state.userLocation.lng - a.position.lng, 2))
+                                - (Math.pow(this.state.userLocation.lat - b.position.lat, 2) + Math.pow(this.state.userLocation.lng - b.position.lng, 2));
+                        }
+                    );
 
-        // fetch('/api/get-comment-id/' + id).catch(function (error) {
-        //     console.log("[Error] " + error);
-        // }).then(
-        //     res => res.json()
-        // ).then((data) => {
-        //     if (data) {
-        //         var num_likes_count = 0;
-        //         var num_dislikes_count = 0;
+                    this.setState(
+                        { allMarkers: allMarkers },
+                        () => {
+                            this.displayMarkers();
+                            this.setState({ loading: false });
+                        }
+                    );
+                    alert(`無法取得使用者位置: ${error.code} : ${error.message}`);
+                },
+                { enableHighAccuracy: true, maximumAge: 10000 }
+            );
 
-        //         for (var i = 0; i < data.userLikes.length; ++i) {
-        //             if (data.userLikes[i].like === true)
-        //                 num_likes_count++;
-        //             else if (data.userLikes[i].like === false)
-        //                 num_dislikes_count++;
-        //         }
-
-        //         const userLikeComment = data.userLikes.find(el => el.userID === userData.userID);
-        //         var userLikeCommentResult = null;
-        //         if (userLikeComment) {
-        //             userLikeCommentResult = userLikeComment.like;
-        //         }
-
-        //         const userFavoComment = data.userFavos.find(el => el.userID === userData.userID);
-        //         var userFavoCommentResult = false;
-        //         if (userFavoComment) {
-        //             userFavoCommentResult = userFavoComment.favo;
-        //         }
-
-        //         data.comments = data.comments.filter(function (el) { return el != null; });
-
-        //         for (var i = 0; i < data.comments.length; ++i) {
-        //             data.comments[i].time = new Date(data.comments[i].time);
-        //         }
-
-        //         const compare = (a, b) => {
-        //             if (a.time > b.time) {
-        //                 return -1;
-        //             } else if (a.time < b.time) {
-        //                 return 1;
-        //             }
-        //             return 0;
-        //         }
-
-        //         this.setState({
-        //             comments: data.comments.sort(compare),
-        //             commentLikes: {
-        //                 num_likes: num_likes_count,
-        //                 num_dislikes: num_dislikes_count,
-        //                 users: data.users
-        //             },
-        //             userComment: {
-        //                 like: userLikeCommentResult,
-        //                 favo: userFavoCommentResult
-        //             },
-        //         });
-
-        //     } else {
-        //         console.log("comment data not found!");
-        //     }
-        // }).then(() => {
-        //     this.setState({ loading_comment: false });
-        // });
-        // });
-
-        const postData = require('./PostData.json')
-
-        this.setState({
-            postData: postData
-        })
-
-
-        window.navigator.geolocation.getCurrentPosition(
-            success => {
-                this.setState({
-                    userLocation: new LatLng(success.coords.latitude, success.coords.longitude),
-                    centerLocation: new LatLng(success.coords.latitude, success.coords.longitude),
-                });
-                var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
-                    function compareDistnace(a, b) {
-                        return (Math.pow(success.coords.latitude - a.position.lat, 2) + Math.pow(success.coords.longitude - a.position.lng, 2))
-                            - (Math.pow(success.coords.latitude - b.position.lat, 2) + Math.pow(success.coords.longitude - b.position.lng, 2));
-                    }
-                );
-
-                this.setState(
-                    { allMarkers: allMarkers },
-                    () => {
-                        this.displayMarkers();
-                        this.setState({ loading: false });
-                    }
-                );
-            },
-            error => {
-                alert(`無法取得使用者位置: ${error.code} : ${error.message}`);
-            },
-            { enableHighAccuracy: true, maximumAge: 10000 }
-        );
-
-        window.navigator.geolocation.watchPosition(
-            success => {
-                this.setState({
-                    userLocation: new LatLng(success.coords.latitude, success.coords.longitude),
-                });
-            },
-            error => {
-            },
-            { enableHighAccuracy: true, maximumAge: 10000 }
-        );
-
-        this.setState({
-            postData: postData
+            window.navigator.geolocation.watchPosition(
+                success => {
+                    this.setState({
+                        userLocation: new LatLng(success.coords.latitude, success.coords.longitude),
+                    });
+                },
+                error => { },
+                { enableHighAccuracy: true, maximumAge: 10000 }
+            );
         })
     }
 
-
     displayMarkers = () => {
-        if (this.state.loading) return;
+        // if (this.state.loading) return;
         if (this.autopan) {
             this.autopan = false;
             setTimeout(() => {
                 const map = this.mapRef.current.leafletElement;
                 const markers = this.state.allMarkers.map(
-                    (m, i) => map.getBounds().pad(0).contains(m.position) ? { index: m.id, position: m.position } : undefined).filter(x => x);
+                    (m, i) => map.getBounds().contains(m.position) ? { index: m.id, position: m.position } : undefined).filter(x => x);
                 this.setState({
                     markers: markers,
                 });
@@ -355,15 +218,15 @@ class PostMap extends Component {
                     });
                 }
                 this.autopan = true;
-            }, 200)
+            }, 10)
         }
     }
 
     onCarouselChange = (currentSlide) => {
-        var id = currentSlide -2;
+        var id = currentSlide - 2;
         if (id < 0) {
             id = this.state.markers.length + id
-        } 
+        }
         this.setState(pre => {
             return ({
                 focusedMark: pre.markers[id].index
@@ -372,18 +235,25 @@ class PostMap extends Component {
     }
 
     handleMarkerClick = (id) => {
-        this.setState(pre => {
-            return ({
-                focusedMark: id
+        this.setState({ focusedMark: id });
+        const focusedMarker = this.state.markers.find(m => m.index === id)
+        if (focusedMarker) {
+            const newCenter = focusedMarker.position;
+            this.setState({
+                markers: this.state.markers.sort(
+                    function compareDistnace(a, b) {
+                        return (Math.pow(newCenter.lat - a.position.lat, 2) + Math.pow(newCenter.lng - a.position.lng, 2))
+                            - (Math.pow(newCenter.lat - b.position.lat, 2) + Math.pow(newCenter.lng - b.position.lng, 2));
+                    }
+                )
             })
-        });
+
+        }
     }
 
     handleGps = () => {
         const map = this.mapRef.current.leafletElement;
         map.flyTo(this.state.userLocation, 15);
-        // this.setState({centerLocation: this.state.userLocation });
-
     }
 
     render() {
@@ -391,18 +261,20 @@ class PostMap extends Component {
 
         const markers = this.state.markers.map((i, id) => {
             const makerIcon = PostOfficeMaker(this.state.postData[i.index].total, this.state.postData[i.index].people, i.index === this.state.focusedMark ? "#AA3939" : undefined);
+            const popup = (i.index === this.state.focusedMark) ? (
+                <Tooltip direction='top' offset={[0, -55]} opacity={1} permanent>
+                    <span>{this.state.postData[i.index].storeNm}</span>
+                </Tooltip>) : null;
+            const zindex = (i.index === this.state.focusedMark) ? 1500 : 500;
             return (
                 <Marker
+                    zIndexOffset={zindex}
                     id={`m-${this.state.postData[i.index].storeCd}`}
                     position={i.position}
                     onClick={(e) => this.handleMarkerClick(i.index)}
                     icon={makerIcon}
                     key={`${id}`}>
-                    <Popup>
-                        <span>
-                            {this.state.postData[i.index].storeNm}
-                        </span>
-                    </Popup>
+                    {popup}
                 </Marker>
             )
         });
@@ -464,13 +336,7 @@ class PostMap extends Component {
                             attribution="&amp;copy <a href=&quot;https:www.cardbo.info&quot;>卡伯 </a> 提供"
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
-                        <Marker position={this.state.userLocation} icon={UserMaker} zIndexOffset={10000}>
-                            <Popup>
-                                <span>
-                                    {`您現在的位置`}
-                                </span>
-                            </Popup>
-                            {/* <Tooltip permanent={true} direction="top " offset={new L.Point(0, 30)}>您現在的位置</Tooltip> */}
+                        <Marker position={this.state.userLocation} icon={UserMaker} zIndexOffset={600}>
                         </Marker>
                         {markers}
                     </Map>
@@ -479,6 +345,7 @@ class PostMap extends Component {
                     </Button >
                     <div className={classes.carouselHolder}>
                         <Carousel
+                            ref={this.carouselRef}
                             style={{ height: "100%" }}
                             swipeable={true}
                             draggable={false}
@@ -507,6 +374,7 @@ class PostMap extends Component {
             )
         }
     }
-}
+};
+
 
 export default withStyles(useStyles)(PostMap)

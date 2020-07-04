@@ -65,8 +65,8 @@ const kImage = `
 const peopleHolder = `
     height: 20px;
     position: absolute;
-    top: 0;
-    left: 30px;
+    top: -6px;
+    left: 25px;
     transform: rotate(-45deg);
     transform-origin: top left;
 
@@ -84,7 +84,7 @@ const PostOfficeMaker = (total, people, color = "#0058a3") => {
     return (
         new L.divIcon({
             className: "my-custom-pin",
-            iconAnchor: [-5, 22],
+            iconAnchor: [-8, 24],
             labelAnchor: [0, 0],
             popupAnchor: [-2, -30],
             html:

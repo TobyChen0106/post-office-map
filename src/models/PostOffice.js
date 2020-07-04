@@ -41,9 +41,6 @@ const PostOfficeSchema = new Schema({
     latitude: {
         type: String,
     },
-    total: {
-        type: String,
-    },
     nowCalling: {
         type: String,
     },
@@ -55,7 +52,10 @@ const PostOfficeSchema = new Schema({
     },
     postDataUpdateTime: {
         type: String,
-    }
+    },
+    total: {
+        type: Number,
+    },
 })
 
 const PostOffice = mongoose.model('postoffice', PostOfficeSchema, "postoffices");
