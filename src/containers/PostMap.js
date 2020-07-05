@@ -194,18 +194,17 @@ class PostMap extends Component {
                     this.setState({ loading: false });
                 }
             );
-           
-
-            navigator.permissions.query({ name: 'geolocation' }).catch(function (error) {
-                alert("haha:", error);
-            }).then((permissionStatus) => {
-
-                if (permissionStatus.state === "prompt") {
-                    this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位")
-                } else {
-                    this.getUserLocation();
-                }
-            });
+            if (navigator.permissions) {
+                navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
+                    if (permissionStatus.state === "prompt") {
+                        this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位")
+                    } else {
+                        this.getUserLocation();
+                    }
+                });
+            } else {
+                this.getUserLocation();
+            }
         })
     }
 
