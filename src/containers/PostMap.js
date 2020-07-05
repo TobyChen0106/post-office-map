@@ -195,7 +195,8 @@ class PostMap extends Component {
                 }
             );
 
-            window.navigator.permissions.query({ name: 'geolocation' }).catch(err=>alert(err)).then((permissionStatus) => {
+            window.navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
+                window.alert(permissionStatus.state);
                 if (permissionStatus.state === "prompt") {
                     this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位")
                 } else {
