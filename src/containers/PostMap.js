@@ -97,7 +97,7 @@ const useStyles = (theme) => ({
     },
     markers: {
         zIndex: "1000",
-    }, 
+    },
     mainInfoHolder: {
         display: "flex column",
         alignItems: "center",
@@ -195,7 +195,7 @@ class PostMap extends Component {
                 }
             );
 
-            window.navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
+            navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
                 window.alert(permissionStatus.state);
                 if (permissionStatus.state === "prompt") {
                     this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位")
@@ -225,7 +225,7 @@ class PostMap extends Component {
     }
 
     getUserLocation = () => {
-        window.navigator.geolocation.getCurrentPosition(
+        navigator.geolocation.getCurrentPosition(
             success => {
                 const postData = this.state.postData
 
@@ -287,7 +287,7 @@ class PostMap extends Component {
             { enableHighAccuracy: true, maximumAge: 10000 }
         );
 
-        window.navigator.geolocation.watchPosition(
+        navigator.geolocation.watchPosition(
             success => {
                 this.setState({
                     userLocation: new LatLng(success.coords.latitude, success.coords.longitude),
