@@ -72,7 +72,7 @@ const useStyles = (theme) => ({
     },
     gps: {
         borderRadius: "50%",
-        backgroundColor: "#ffffff",
+        // backgroundColor: "#ffffff",
         margin: "1rem",
         width: "4rem",
         height: "4rem",
@@ -127,6 +127,8 @@ class PostMap extends Component {
             centerLocation: new LatLng(25.042229, 121.5651594),
             loading: true,
             focusedMark: undefined,
+            fetchData: false,
+            locationAvailable: false,
         }
         this.carouselRef = React.createRef();
         this.mapRef = React.createRef();
@@ -137,16 +139,27 @@ class PostMap extends Component {
         fetch('/api/getData').catch(function (error) {
             console.log("[Error] " + error);
         }).then(
-            res => res.json()
-        ).then((data) => {
-            console.log(data)
-            var postData = require('./PostData.json');
-            if (data) {
-                postData = data;
+            res => {
+                if (res.ok) {
+                    return res.json()
+                    this.setState({ fetchData: true });
+                }
+                else {
+                    return null
+                }
             }
+        ).then((data) => {
+            const postData = data ? data : require('./PostData.json');
+
             this.setState({
                 postData: postData
             })
+
+            // if ("geolocation" in window.navigator) {
+            //     window.alert("Available");
+            // } else {
+            //     window.alert("請開啟定位功能");
+            // }
 
             window.navigator.geolocation.getCurrentPosition(
                 success => {
@@ -184,7 +197,7 @@ class PostMap extends Component {
                             this.setState({ loading: false });
                         }
                     );
-                    alert(`無法取得使用者位置: ${error.code} : ${error.message}`);
+                    window.alert(`無法取得使用者位置，請確認已開啟定位功能\n ${error.code} : ${error.message}`);
                 },
                 { enableHighAccuracy: true, maximumAge: 10000 }
             );
