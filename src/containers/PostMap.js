@@ -155,11 +155,12 @@ class PostMap extends Component {
                 postData: postData
             })
 
-            if ("geolocation" in window.navigator) {
-                // window.alert("Available");
-            } else {
-                window.alert("[錯誤] 請確認已開啟定位功能");
-            }
+            // if ("geolocation" in window.navigator) {
+            //     window.alert("[OK] 請確認已開啟定位功能");
+
+            // } else {
+            //     window.alert("[錯誤] 請確認已開啟定位功能");
+            // }
 
             window.navigator.geolocation.getCurrentPosition(
                 success => {
@@ -183,10 +184,11 @@ class PostMap extends Component {
                     );
                 },
                 error => {
+                    const cardboPosition = this.state.userLocation;
                     var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
                         function compareDistnace(a, b) {
-                            return (Math.pow(this.state.userLocation.lat - a.position.lat, 2) + Math.pow(this.state.userLocation.lng - a.position.lng, 2))
-                                - (Math.pow(this.state.userLocation.lat - b.position.lat, 2) + Math.pow(this.state.userLocation.lng - b.position.lng, 2));
+                            return (Math.pow(cardboPosition.lat - a.position.lat, 2) + Math.pow(cardboPosition.lng - a.position.lng, 2))
+                                - (Math.pow(cardboPosition.lat - b.position.lat, 2) + Math.pow(cardboPosition.lng - b.position.lng, 2));
                         }
                     );
 
