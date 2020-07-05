@@ -2,18 +2,14 @@ import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles';
 import ReactLoading from 'react-loading';
 import { LatLng } from 'leaflet';
-import L from 'leaflet';
+
 import {
-    Circle,
-    CircleMarker,
     Map,
     Marker,
-    Polygon,
-    Popup,
-    Rectangle,
     TileLayer,
     Tooltip,
 } from 'react-leaflet'
+import ReactTimeAgo from 'react-time-ago'
 import PostOfficeMaker from '../components/PostOfficeMaker';
 import UserMaker from '../components/UserMaker';
 import Carousel from 'react-multi-carousel';
@@ -28,8 +24,19 @@ import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
 import GpsFixedIcon from '@material-ui/icons/GpsFixed';
+import SvgIcon from '@material-ui/core/SvgIcon';
+import Divider from '@material-ui/core/Divider';
+import Menu from '@material-ui/core/Menu';
+import MenuItem from '@material-ui/core/MenuItem';
+import myTooltip from '@material-ui/core/Tooltip';
+import k from "../assets/3k.svg"
+import p from "../assets/people.svg"
 
-import postOffcieImage from "../assets/post-office-icon.png"
+import postOffcieImage from "../assets/post-office-icon.png";
+
+import 'react-notifications/lib/notifications.css';
+import { NotificationContainer, NotificationManager } from 'react-notifications';
+
 // Liff
 const liff = window.liff;
 
@@ -72,11 +79,9 @@ const useStyles = (theme) => ({
     },
     gps: {
         borderRadius: "50%",
-        // backgroundColor: "#ffffff",
         margin: "1rem",
         width: "4rem",
         height: "4rem",
-
         position: "fixed",
         bottom: "10rem",
         right: 0,
@@ -92,7 +97,23 @@ const useStyles = (theme) => ({
     },
     markers: {
         zIndex: "1000",
+    }, 
+    mainInfoHolder: {
+        display: "flex column",
+        alignItems: "center",
+        justifyContent: "space-between",
+    },
+    mainInfoTypography: {
+        display: "flex",
+        justifyContent: "space-between"
+    },
+    CardContent: {
+        paddingTop: 0
+    },
+    Divider: {
+        margin: "1rem",
     }
+
 });
 
 
@@ -129,6 +150,7 @@ class PostMap extends Component {
             focusedMark: undefined,
             fetchData: false,
             locationAvailable: false,
+            geoErrorCode: 0,
         }
         this.carouselRef = React.createRef();
         this.mapRef = React.createRef();
@@ -145,75 +167,137 @@ class PostMap extends Component {
                     this.setState({ fetchData: true });
                 }
                 else {
-                    return null
+                    this.createNotification("error", "無法載入資料", "請確認網路連線狀況");
+                    return null;
                 }
             }
         ).then((data) => {
             const postData = data ? data : require('./PostData.json');
 
-            this.setState({
-                postData: postData
-            })
+            for (var i = 0; i < postData.length; ++i) {
+                postData[i].waitingUpdateTime = new Date(postData[i].waitingUpdateTime);
+                postData[i].postDataUpdateTime = new Date(postData[i].postDataUpdateTime);
+            }
 
-            // if ("geolocation" in window.navigator) {
-            //     window.alert("[OK] 請確認已開啟定位功能");
-
-            // } else {
-            //     window.alert("[錯誤] 請確認已開啟定位功能");
-            // }
-
-            window.navigator.geolocation.getCurrentPosition(
-                success => {
-                    this.setState({
-                        userLocation: new LatLng(success.coords.latitude, success.coords.longitude),
-                        centerLocation: new LatLng(success.coords.latitude, success.coords.longitude),
-                    });
-                    var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
-                        function compareDistnace(a, b) {
-                            return (Math.pow(success.coords.latitude - a.position.lat, 2) + Math.pow(success.coords.longitude - a.position.lng, 2))
-                                - (Math.pow(success.coords.latitude - b.position.lat, 2) + Math.pow(success.coords.longitude - b.position.lng, 2));
-                        }
-                    );
-
-                    this.setState(
-                        { allMarkers: allMarkers },
-                        () => {
-                            this.displayMarkers();
-                            this.setState({ loading: false });
-                        }
-                    );
-                },
-                error => {
-                    const cardboPosition = this.state.userLocation;
-                    var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
-                        function compareDistnace(a, b) {
-                            return (Math.pow(cardboPosition.lat - a.position.lat, 2) + Math.pow(cardboPosition.lng - a.position.lng, 2))
-                                - (Math.pow(cardboPosition.lat - b.position.lat, 2) + Math.pow(cardboPosition.lng - b.position.lng, 2));
-                        }
-                    );
-
-                    this.setState(
-                        { allMarkers: allMarkers },
-                        () => {
-                            this.displayMarkers();
-                            this.setState({ loading: false });
-                        }
-                    );
-                    window.alert(`[錯誤] 無法取得使用者位置\n ${error.code} : ${error.message}`);
-                },
-                { enableHighAccuracy: true, maximumAge: 10000 }
+            const cardboPosition = this.state.userLocation;
+            var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
+                function compareDistnace(a, b) {
+                    return (Math.pow(cardboPosition.lat - a.position.lat, 2) + Math.pow(cardboPosition.lng - a.position.lng, 2))
+                        - (Math.pow(cardboPosition.lat - b.position.lat, 2) + Math.pow(cardboPosition.lng - b.position.lng, 2));
+                }
             );
 
-            window.navigator.geolocation.watchPosition(
-                success => {
-                    this.setState({
-                        userLocation: new LatLng(success.coords.latitude, success.coords.longitude),
-                    });
-                },
-                error => { },
-                { enableHighAccuracy: true, maximumAge: 10000 }
+            this.setState(
+                { postData: postData, allMarkers: allMarkers },
+                () => {
+                    this.displayMarkers();
+                    this.setState({ loading: false });
+                }
             );
+
+            window.navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
+                if (permissionStatus.state === "prompt") {
+                    this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位")
+                } else {
+                    this.getUserLocation();
+                }
+                // permissionStatus.onchange = function () {
+                //     console.log('geolocation permission status has changed to ', this.state);
+                // };
+            });
         })
+    }
+
+    createNotification = (type, title, message) => {
+        console.log(type, title, message)
+        switch (type) {
+            case 'info':
+                NotificationManager.info(message, title, 2000);
+                break;
+            case 'success':
+                NotificationManager.success(message, title, 2000);
+                break;
+            case 'warning':
+                NotificationManager.warning(message, title, 2000000, () => { this.getUserLocation(); });
+                break;
+            case 'error':
+                NotificationManager.error(message, title, 2000000);
+                break;
+        }
+    }
+
+    getUserLocation = () => {
+        window.navigator.geolocation.getCurrentPosition(
+            success => {
+                const postData = this.state.postData
+
+                this.setState({
+                    userLocation: new LatLng(success.coords.latitude, success.coords.longitude),
+                    centerLocation: new LatLng(success.coords.latitude, success.coords.longitude),
+                });
+
+                var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
+                    function compareDistnace(a, b) {
+                        return (Math.pow(success.coords.latitude - a.position.lat, 2) + Math.pow(success.coords.longitude - a.position.lng, 2))
+                            - (Math.pow(success.coords.latitude - b.position.lat, 2) + Math.pow(success.coords.longitude - b.position.lng, 2));
+                    }
+                );
+                this.setState(
+                    { allMarkers: allMarkers },
+                    () => {
+                        this.displayMarkers();
+                        this.setState({ loading: false });
+                    }
+                );
+            },
+            error => {
+                const postData = this.state.postData
+                const cardboPosition = this.state.userLocation;
+                var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
+                    function compareDistnace(a, b) {
+                        return (Math.pow(cardboPosition.lat - a.position.lat, 2) + Math.pow(cardboPosition.lng - a.position.lng, 2))
+                            - (Math.pow(cardboPosition.lat - b.position.lat, 2) + Math.pow(cardboPosition.lng - b.position.lng, 2));
+                    }
+                );
+
+                this.setState(
+                    { allMarkers: allMarkers },
+                    () => {
+                        this.displayMarkers();
+                        this.setState({ loading: false });
+                    }
+                );
+
+                switch (error.code) {
+                    // PERMISSION_DENIED
+                    case 1:
+                        this.setState({ geoErrorCode: 1 });
+                        this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請至瀏覽器設定重新授權。");
+                        break
+                    // POSITION_UNAVAILABLE
+                    case 2:
+                        this.setState({ geoErrorCode: 2 });
+                        this.createNotification("error", "無法取得使用者位置資訊", "請開啟手機定位功能!");
+                        break
+                    // TIMEOUT
+                    case 3:
+                        this.setState({ geoErrorCode: 3 });
+                        this.createNotification("error", "無法取得使用者位置資訊", "請求逾時。");
+                        break
+                }
+            },
+            { enableHighAccuracy: true, maximumAge: 10000 }
+        );
+
+        window.navigator.geolocation.watchPosition(
+            success => {
+                this.setState({
+                    userLocation: new LatLng(success.coords.latitude, success.coords.longitude),
+                });
+            },
+            error => { },
+            { enableHighAccuracy: true, maximumAge: 10000 }
+        );
     }
 
     displayMarkers = () => {
@@ -227,7 +311,8 @@ class PostMap extends Component {
                 this.setState({
                     markers: markers,
                 });
-                if (!this.state.focusedMark || markers.findIndex(m => m.index === this.state.focusedMark) === -1) {
+
+                if (!this.state.focusedMark || (markers.length > 0 && markers.findIndex(m => m.index === this.state.focusedMark) === -1)) {
                     this.setState({
                         focusedMark: markers[0].index
                     });
@@ -266,13 +351,20 @@ class PostMap extends Component {
         }
     }
 
-    handleGps = () => {
+    handleGps = (e) => {
+        e.preventDefault();
         const map = this.mapRef.current.leafletElement;
         map.flyTo(this.state.userLocation, 15);
     }
 
     render() {
         const { classes } = this.props;
+
+        const TooltipContainer = ({ verboseDate, children, ...rest }) => (
+            <myTooltip {...rest} title={verboseDate} arrow>
+                {children}
+            </myTooltip>
+        )
 
         const markers = this.state.markers.map((i, id) => {
             const makerIcon = PostOfficeMaker(this.state.postData[i.index].total, this.state.postData[i.index].people, i.index === this.state.focusedMark ? "#AA3939" : undefined);
@@ -305,24 +397,70 @@ class PostMap extends Component {
                             </Avatar>
                         }
                         action={
-                            <IconButton aria-label="settings">
-                                <MoreVertIcon />
-                            </IconButton>
+                            <>
+                                {/* <IconButton aria-label="settings" >
+                                    <MoreVertIcon />
+                                </IconButton> */}
+                                {/* <Menu
+                                    id="simple-menu"
+                                    anchorEl={true}
+                                    keepMounted
+                                    open={true}
+                                // onClose={this.handleClose}
+                                >
+                                    <MenuItem onClick={this.handleClose}>問題回報</MenuItem>
+                                    <MenuItem onClick={this.handleClose}>在 Google Map 中開啟</MenuItem>
+                                </Menu> */}
+                            </>
                         }
                         title={this.state.postData[i.index].storeNm}
                         subheader={Parser(this.state.postData[i.index].busiTime)}
                     />
-                    <CardContent>
+                    <CardContent className={classes.CardContent}>
+                        <Typography variant="subtitle2" component="p" className={classes.mainInfoTypography}>
+                            <div className={classes.mainInfoHolder}>
+                                <img aria-label="三倍券存量" style={{ width: 15, height: 15 }} src={k} />
+                                {`  三倍券存量: ${this.state.postData[i.index].total}`}
+                                <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
+                                    {`(${this.state.postData[i.index].postDataUpdateTime.getMonth()}/${this.state.postData[i.index].postDataUpdateTime.getDate()} 
+                                ${this.state.postData[i.index].postDataUpdateTime.getHours()}:${this.state.postData[i.index].postDataUpdateTime.getMinutes()} 更新)`}
+                                </Typography>
+                            </div>
 
-                        <Typography variant="body2" color="textSecondary" component="p">
-                            {`三倍券存量: ${this.state.postData[i.index].total}  等待人數: ${10}`}
+                            <div className={classes.mainInfoHolder}>
+                                <img aria-label="等待人數" style={{ width: 15, height: 15 }} src={p} />
+                                {`  等待人數: ${this.state.postData[i.index].nowWaiting}`}
+                                <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
+                                    {`(${this.state.postData[i.index].waitingUpdateTime.getMonth()}/${this.state.postData[i.index].waitingUpdateTime.getDate()} 
+                                ${this.state.postData[i.index].waitingUpdateTime.getHours()}:${this.state.postData[i.index].waitingUpdateTime.getMinutes()} 更新)`}
+                                </Typography>
+                            </div>
                         </Typography>
+
+
                         <Typography variant="body2" color="textSecondary" component="p">
                             {memo}
                         </Typography>
-                    </CardContent>
 
-                </Card>
+                        <Divider variant="middle" className={classes.Divider} />
+
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            {`地址: ${this.state.postData[i.index].addr}`}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            {`聯絡電話: ${this.state.postData[i.index].tel}   郵遞區號: ${this.state.postData[i.index].zipCd} `}
+                        </Typography>
+
+                        {/* <Divider variant="middle" className={classes.Divider} /> */}
+
+                        <Typography variant="body2" color="textSecondary" component="p">
+                            {`資料來源 : `}
+                            <a href="https://www.moeasmea.gov.tw/masterpage-tw">經濟部中小企業處</a>
+                            {` `}
+                            <a href="https://www.post.gov.tw/post/internet/index.jsp">中華郵政</a>
+                        </Typography>
+                    </CardContent>
+                </Card >
             )
         });
 
@@ -348,14 +486,14 @@ class PostMap extends Component {
                     >
 
                         <TileLayer
-                            attribution="&amp;copy <a href=&quot;https:www.cardbo.info&quot;>卡伯 </a> 提供"
+                            attribution="&amp;copy <a target=&quot;_blank&quot; href=&quot;https:www.cardbo.info&quot;>卡伯 </a> 提供"
                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                         />
                         <Marker position={this.state.userLocation} icon={UserMaker} zIndexOffset={600}>
                         </Marker>
                         {markers}
                     </Map>
-                    <Button className={classes.gps} variant="contained" disableFocusRipple={true} onClick={this.handleGps}>
+                    <Button className={classes.gps} style={{ backgroundColor: "#fff" }} variant="contained" onClick={e => this.handleGps(e)}>
                         <GpsFixedIcon className={classes.gpsIcon} />
                     </Button >
                     <div className={classes.carouselHolder}>
@@ -372,7 +510,7 @@ class PostMap extends Component {
                             // autoPlaySpeed={1000}
                             keyBoardControl={true}
                             // customTransition="all .5"
-                            transitionDuration={800}
+                            transitionDuration={650}
                             containerClass="carousel-container"
                             removeArrowOnDeviceType={["tablet", "mobile"]}
 
@@ -385,6 +523,7 @@ class PostMap extends Component {
                             {carouselCards}
                         </Carousel>;
                     </div>
+                    <NotificationContainer />
                 </>
             )
         }
