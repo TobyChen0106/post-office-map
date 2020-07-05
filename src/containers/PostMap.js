@@ -155,11 +155,11 @@ class PostMap extends Component {
                 postData: postData
             })
 
-            // if ("geolocation" in window.navigator) {
-            //     window.alert("Available");
-            // } else {
-            //     window.alert("請開啟定位功能");
-            // }
+            if ("geolocation" in window.navigator) {
+                // window.alert("Available");
+            } else {
+                window.alert("[錯誤] 請確認已開啟定位功能");
+            }
 
             window.navigator.geolocation.getCurrentPosition(
                 success => {
@@ -197,7 +197,7 @@ class PostMap extends Component {
                             this.setState({ loading: false });
                         }
                     );
-                    window.alert(`無法取得使用者位置，請確認已開啟定位功能\n ${error.code} : ${error.message}`);
+                    window.alert(`[錯誤] 無法取得使用者位置\n ${error.code} : ${error.message}`);
                 },
                 { enableHighAccuracy: true, maximumAge: 10000 }
             );
