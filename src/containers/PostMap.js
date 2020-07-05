@@ -1,4 +1,5 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
+import { Redirect, Route, Switch } from "react-router-dom";
 import { withStyles } from '@material-ui/core/styles';
 import ReactLoading from 'react-loading';
 import { LatLng } from 'leaflet';
@@ -151,6 +152,8 @@ class PostMap extends Component {
             fetchData: false,
             locationAvailable: false,
             geoErrorCode: 0,
+            userData: undefined,
+            redirect: false,
         }
         this.carouselRef = React.createRef();
         this.mapRef = React.createRef();
@@ -158,13 +161,14 @@ class PostMap extends Component {
     }
 
     componentWillMount = () => {
+
         fetch('/api/getData').catch(function (error) {
             console.log("[Error] " + error);
         }).then(
             res => {
                 if (res.ok) {
-                    return res.json()
                     this.setState({ fetchData: true });
+                    return res.json()
                 }
                 else {
                     this.createNotification("error", "無法載入資料", "請確認網路連線狀況");
@@ -173,7 +177,6 @@ class PostMap extends Component {
             }
         ).then((data) => {
             const postData = data ? data : require('./PostData.json');
-
             for (var i = 0; i < postData.length; ++i) {
                 postData[i].waitingUpdateTime = new Date(postData[i].waitingUpdateTime);
                 postData[i].postDataUpdateTime = new Date(postData[i].postDataUpdateTime);
@@ -186,7 +189,6 @@ class PostMap extends Component {
                         - (Math.pow(cardboPosition.lat - b.position.lat, 2) + Math.pow(cardboPosition.lng - b.position.lng, 2));
                 }
             );
-
             this.setState(
                 { postData: postData, allMarkers: allMarkers },
                 () => {
@@ -194,7 +196,13 @@ class PostMap extends Component {
                     this.setState({ loading: false });
                 }
             );
-            this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位");
+            this.getUserLocation();
+            // if (user) {
+            //     this.getUserLocation();
+            // } else {
+
+            //     this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位");
+            // }
             // if (navigator.permissions) {
             //     navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
             //         if (permissionStatus.state === "prompt") {
@@ -206,7 +214,7 @@ class PostMap extends Component {
             // } else {
             //     this.getUserLocation();
             // }
-        })
+        });
     }
 
     createNotification = (type, title, message) => {
@@ -222,7 +230,11 @@ class PostMap extends Component {
                 NotificationManager.warning(message, title, 2000000, () => { this.getUserLocation(); });
                 break;
             case 'error':
-                NotificationManager.error(message, title, 2000000);
+                NotificationManager.error(message, title, 5000, () => {
+                    this.setState({ redirect: true },
+                        // setTimeout(this.setState({ redirect: false }), 100)
+                    );
+                });
                 break;
         }
     }
@@ -231,7 +243,6 @@ class PostMap extends Component {
         navigator.geolocation.getCurrentPosition(
             success => {
                 const postData = this.state.postData
-
                 this.setState({
                     userLocation: new LatLng(success.coords.latitude, success.coords.longitude),
                     centerLocation: new LatLng(success.coords.latitude, success.coords.longitude),
@@ -273,12 +284,12 @@ class PostMap extends Component {
                     // PERMISSION_DENIED
                     case 1:
                         this.setState({ geoErrorCode: 1 });
-                        this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。");
+                        this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。點擊以獲得更多資訊。");
                         break
                     // POSITION_UNAVAILABLE
                     case 2:
                         this.setState({ geoErrorCode: 2 });
-                        this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。");
+                        this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。點擊以獲得更多資訊。");
                         break
                     // TIMEOUT
                     case 3:
@@ -361,12 +372,6 @@ class PostMap extends Component {
     render() {
         const { classes } = this.props;
 
-        const TooltipContainer = ({ verboseDate, children, ...rest }) => (
-            <myTooltip {...rest} title={verboseDate} arrow>
-                {children}
-            </myTooltip>
-        )
-
         const markers = this.state.markers.map((i, id) => {
             const makerIcon = PostOfficeMaker(this.state.postData[i.index].total, this.state.postData[i.index].people, i.index === this.state.focusedMark ? "#AA3939" : undefined);
             const popup = (i.index === this.state.focusedMark) ? (
@@ -402,16 +407,6 @@ class PostMap extends Component {
                                 {/* <IconButton aria-label="settings" >
                                     <MoreVertIcon />
                                 </IconButton> */}
-                                {/* <Menu
-                                    id="simple-menu"
-                                    anchorEl={true}
-                                    keepMounted
-                                    open={true}
-                                // onClose={this.handleClose}
-                                >
-                                    <MenuItem onClick={this.handleClose}>問題回報</MenuItem>
-                                    <MenuItem onClick={this.handleClose}>在 Google Map 中開啟</MenuItem>
-                                </Menu> */}
                             </>
                         }
                         title={this.state.postData[i.index].storeNm}
@@ -423,7 +418,7 @@ class PostMap extends Component {
                                 <img aria-label="三倍券存量" style={{ width: 15, height: 15 }} src={k} />
                                 {`  三倍券存量: ${this.state.postData[i.index].total}`}
                                 <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
-                                    {`(${this.state.postData[i.index].postDataUpdateTime.getMonth()}/${this.state.postData[i.index].postDataUpdateTime.getDate()} 
+                                    {`(${this.state.postData[i.index].postDataUpdateTime.getMonth()+1}/${this.state.postData[i.index].postDataUpdateTime.getDate()} 
                                 ${this.state.postData[i.index].postDataUpdateTime.getHours()}:${this.state.postData[i.index].postDataUpdateTime.getMinutes()} 更新)`}
                                 </Typography>
                             </div>
@@ -432,7 +427,7 @@ class PostMap extends Component {
                                 <img aria-label="等待人數" style={{ width: 15, height: 15 }} src={p} />
                                 {`  等待人數: ${this.state.postData[i.index].nowWaiting}`}
                                 <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
-                                    {`(${this.state.postData[i.index].waitingUpdateTime.getMonth()}/${this.state.postData[i.index].waitingUpdateTime.getDate()} 
+                                    {`(${this.state.postData[i.index].waitingUpdateTime.getMonth()+1}/${this.state.postData[i.index].waitingUpdateTime.getDate()} 
                                 ${this.state.postData[i.index].waitingUpdateTime.getHours()}:${this.state.postData[i.index].waitingUpdateTime.getMinutes()} 更新)`}
                                 </Typography>
                             </div>
@@ -465,7 +460,10 @@ class PostMap extends Component {
             )
         });
 
-        if (this.state.loading) {
+        if (this.state.redirect) {
+            return <Redirect push to="/info" />;
+        }
+        else if (this.state.loading) {
             return (
                 <div className={classes.loading}>
                     <ReactLoading type={'cubes'} color={'#ffffff'} height={'90vw'} width={'90vw'} />

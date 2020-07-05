@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const PostOffice = require('../models/PostOffice');
+const User = require('../models/User');
 
 router.post('/append-comment-id/:id', (req, res) => {
     // const id = req.params.id;
@@ -43,5 +44,20 @@ router.get('/getData', (req, res) => {
     })
 });
 
+router.get('/check-user', (req, res) => {
+    const id = req.params.id;
+    User.findOne({ lineID: id }, (err, data) => {
+        if (err) {
+            console.log(err);
+        }
+        else if (!data) {
+            console.log("[ERROR] <get-comment-id> DATA NOT FOUND!");
+            res.json(null);
+        }
+        else {
+            res.json(data);
+        }
+    })
+});
 
 module.exports = router;

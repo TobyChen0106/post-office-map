@@ -42,10 +42,10 @@ const PostOfficeSchema = new Schema({
         type: String,
     },
     nowCalling: {
-        type: String,
+        type: Number,
     },
     nowWaiting: {
-        type: String,
+        type: Number,
     },
     waitingUpdateTime: {
         type: String,

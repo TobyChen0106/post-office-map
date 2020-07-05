@@ -17,6 +17,25 @@ db.once('open', () => {
 
 const file_path = "./PostData.json";
 
+var json = require('./o.PostData.json'); 
+console.log(json.length)
+// for (var i = 0; i < json.length; ++i) {
+//     json[i].nowCalling = 0;
+//     json[i].nowWaiting = 0;
+//     var newData = new PostOffice(json[i])
+//     newData.save().catch(err=).then(console.log(i))
+// }
+// PostOffice.deleteMany({}, (err, data) => {
+//     if (err) {
+//         console.log(err);
+//     }
+//     else if (!data) {
+//         console.log("[ERROR] EMPTY DATA!");
+//     } else {
+
+//     }
+// })
+
 PostOffice.find({}, (err, data) => {
     if (err) {
         console.log(err);
@@ -24,12 +43,7 @@ PostOffice.find({}, (err, data) => {
     else if (!data) {
         console.log("[ERROR] EMPTY DATA!");
     } else {
-        // for(var i=0; i<data.length;  ++i){
-        //     data[i].nowCalling = 0;
-        //     data[i].nowWaiting = 0;
-        //     data[i].save();
-        // }
-        // fs.writeFile(file_path, JSON.stringify(data), 'utf8', () => console.log(`successfully dump offer to ${file_path}`)) 
-        console.log(data)
+        // console.log(data.length)
+        fs.writeFile(file_path, JSON.stringify(data), 'utf8', () => console.log(`successfully dump offer to ${file_path}`)) 
     }
 })

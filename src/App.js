@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
 import './App.css';
 import ReactDOM from "react-dom";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 import PostMap from "./containers/PostMap";
-import  {
+import Info from "./components/Info";
+import {
   BrowserView,
   MobileView,
   isBrowser,
   isMobile,
   deviceType
-} from "react-device-detect"; 
+} from "react-device-detect";
 
 export default class App extends Component {
   constructor(props) {
@@ -19,7 +21,14 @@ export default class App extends Component {
 
   render() {
     return (
-      <PostMap deviceType={deviceType}/>
+      <BrowserRouter>
+        <Switch>
+          <Route exact={true} path="/">
+            <PostMap deviceType={deviceType} />
+          </Route>
+          <Route path="/info" component={Info} />
+        </Switch>
+      </BrowserRouter>
     );
   }
 }

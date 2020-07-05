@@ -1,17 +1,21 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-const UserSchema = new Schema({
-    hsnCd: {
+const UserActionSchema = new Schema({
+    lineID: {
+        type: String,
+        required: true,
+    },
+    userImage: {
         type: String,
     },
-    hsnNm: {
+    displayName: {
         type: String,
     },
-    townCd: {
-        type: String,
-    },
+    actions: {
+        type: [String],
+    }
 })
 
-const User = mongoose.model('User', UserSchema, "users");
-module.exports = User;
+const UserAction = mongoose.model('UserAction', UserActionSchema, "useractions");
+module.exports = UserAction;
