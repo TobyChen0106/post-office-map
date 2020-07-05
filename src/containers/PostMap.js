@@ -195,15 +195,12 @@ class PostMap extends Component {
                 }
             );
 
-            window.navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
+            window.navigator.permissions.query({ name: 'geolocation' })catch(err=>alert(err)).then((permissionStatus) => {
                 if (permissionStatus.state === "prompt") {
                     this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位")
                 } else {
                     this.getUserLocation();
                 }
-                // permissionStatus.onchange = function () {
-                //     console.log('geolocation permission status has changed to ', this.state);
-                // };
             });
         })
     }
@@ -272,12 +269,12 @@ class PostMap extends Component {
                     // PERMISSION_DENIED
                     case 1:
                         this.setState({ geoErrorCode: 1 });
-                        this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請至瀏覽器設定重新授權。");
+                        this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。");
                         break
                     // POSITION_UNAVAILABLE
                     case 2:
                         this.setState({ geoErrorCode: 2 });
-                        this.createNotification("error", "無法取得使用者位置資訊", "請開啟手機定位功能!");
+                        this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。");
                         break
                     // TIMEOUT
                     case 3:
