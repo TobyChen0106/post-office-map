@@ -192,8 +192,8 @@ class PostMap extends Component {
             this.setState(
                 { postData: postData, allMarkers: allMarkers },
                 () => {
-                    this.displayMarkers();
-                    this.setState({ loading: false });
+                    // this.displayMarkers();
+                    // this.setState({ loading: false });
                 }
             );
             this.getUserLocation();
