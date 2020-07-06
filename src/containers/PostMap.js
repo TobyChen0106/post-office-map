@@ -385,7 +385,7 @@ class PostMap extends Component {
 
         const markers = this.state.markers.map((i, id) => {
             const makerIcon = PostOfficeMaker(this.state.postData[i.index].total, this.state.postData[i.index].nowWaiting,
-                this.state.postData[i.index].people, i.index === this.state.focusedMark ? "#AA3939" : undefined);
+                i.index === this.state.focusedMark ? "#AA3939" : undefined);
             const popup = (i.index === this.state.focusedMark) ? (
                 <Tooltip direction='top' offset={[0, -55]} opacity={1} permanent>
                     <span>{this.state.postData[i.index].storeNm}</span>
@@ -431,7 +431,7 @@ class PostMap extends Component {
                                 {`  三倍券存量: ${this.state.postData[i.index].total}`}
                                 <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
                                     {`(${this.state.postData[i.index].postDataUpdateTime.getMonth() + 1}/${this.state.postData[i.index].postDataUpdateTime.getDate()} 
-                                ${this.state.postData[i.index].postDataUpdateTime.getHours()-8}:${this.state.postData[i.index].postDataUpdateTime.getMinutes()} 更新)`}
+                                ${this.state.postData[i.index].postDataUpdateTime.getHours() - 8}:${this.state.postData[i.index].postDataUpdateTime.getMinutes()} 更新)`}
                                 </Typography>
                             </div>
 
@@ -439,8 +439,10 @@ class PostMap extends Component {
                                 <img aria-label="等待人數" style={{ width: 15, height: 15 }} src={p} />
                                 {`  等待人數: ${this.state.postData[i.index].nowWaiting === -1 ? "無資料" : this.state.postData[i.index].nowWaiting}`}
                                 <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
-                                    {`(${this.state.postData[i.index].waitingUpdateTime.getMonth() + 1}/${this.state.postData[i.index].waitingUpdateTime.getDate()} 
-                                ${this.state.postData[i.index].waitingUpdateTime.getHours()-8}:${this.state.postData[i.index].waitingUpdateTime.getMinutes()} 更新)`}
+                                    {this.state.postData[i.index].nowWaiting === -1 ? `` :
+                                        `(${this.state.postData[i.index].waitingUpdateTime.getMonth() + 1}/${this.state.postData[i.index].waitingUpdateTime.getDate()} 
+                                    ${this.state.postData[i.index].waitingUpdateTime.getHours() - 8}:${this.state.postData[i.index].waitingUpdateTime.getMinutes()} 更新)`
+                                    }
                                 </Typography>
                             </div>
                         </Typography>
