@@ -431,7 +431,7 @@ class PostMap extends Component {
                                 {`  三倍券存量: ${this.state.postData[i.index].total}`}
                                 <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
                                     {`(${this.state.postData[i.index].postDataUpdateTime.getMonth() + 1}/${this.state.postData[i.index].postDataUpdateTime.getDate()} 
-                                ${this.state.postData[i.index].postDataUpdateTime.getHours()}:${this.state.postData[i.index].postDataUpdateTime.getMinutes()} 更新)`}
+                                ${this.state.postData[i.index].postDataUpdateTime.getHours()-8}:${this.state.postData[i.index].postDataUpdateTime.getMinutes()} 更新)`}
                                 </Typography>
                             </div>
 
@@ -440,7 +440,7 @@ class PostMap extends Component {
                                 {`  等待人數: ${this.state.postData[i.index].nowWaiting === -1 ? "無資料" : this.state.postData[i.index].nowWaiting}`}
                                 <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
                                     {`(${this.state.postData[i.index].waitingUpdateTime.getMonth() + 1}/${this.state.postData[i.index].waitingUpdateTime.getDate()} 
-                                ${this.state.postData[i.index].waitingUpdateTime.getHours()}:${this.state.postData[i.index].waitingUpdateTime.getMinutes()} 更新)`}
+                                ${this.state.postData[i.index].waitingUpdateTime.getHours()-8}:${this.state.postData[i.index].waitingUpdateTime.getMinutes()} 更新)`}
                                 </Typography>
                             </div>
                         </Typography>
