@@ -25,7 +25,7 @@ def get_option_list(driver, id, exclude="請選擇"):
             _list.append(option.text)
     return _list
 
-def parsePosterData(checkpage, phone_num="0123456789", num_poster = 1739, full=True):
+def parsePosterData(checkpage, phone_num="0123456789", num_poster = 616, full=True):
     options = Options()
     options.headless = True
     driver = webdriver.Firefox(options=options)
@@ -98,28 +98,27 @@ def parsePosterData(checkpage, phone_num="0123456789", num_poster = 1739, full=T
                                 branchinfo = re.split("：",branchinfo)[1]
 
                                 poster_data.append({ "poster_name":title, "type":infos[0], "current_num":infos[2], "waiting_num":infos[4], "telephone_num":phone, "address":branchinfo, "onclick":onclick })
-                            
-                            
-                                for poster in poster_data:
-                                    #### PRINT ####
-                                    poster_counter=poster_counter+1
-                                    printProgressBar(poster_counter, num_poster, prefix="SOLVING", suffix=f"  {city}-{district}-{poster['poster_name']}          ")
-                                    #### PRINT ####
-                                    if(full):
-                                        driver.execute_script(poster["onclick"])
-                                        try:
-                                            flag = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "labelBRHName")))
-                                        except TimeoutException:
-                                            print("[Get Update Time] Timeout <%s>"%poster["poster_name"])
-                                            break
-                                        root_for_update = bs4.BeautifulSoup(driver.page_source, "html.parser")
-                                        update_time_el = root_for_update.find(id="labelLastUpdate")
-                                        if(update_time_el):
-                                            updateTime = update_time_el.text
-                                        poster["update_time"] = updateTime
-                                        driver.back()
-                                        
-                                    data_list.append(poster.copy())
+                                
+                            for poster in poster_data:
+                                #### PRINT ####
+                                poster_counter=poster_counter+1
+                                printProgressBar(poster_counter, num_poster, prefix="SOLVING", suffix=f"  {city}-{district}-{poster['poster_name']}          ")
+                                #### PRINT ####
+                                if(full):
+                                    driver.execute_script(poster["onclick"])
+                                    try:
+                                        flag = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.ID, "labelBRHName")))
+                                    except TimeoutException:
+                                        print("[Get Update Time] Timeout <%s>"%poster["poster_name"])
+                                        break
+                                    root_for_update = bs4.BeautifulSoup(driver.page_source, "html.parser")
+                                    update_time_el = root_for_update.find(id="labelLastUpdate")
+                                    if(update_time_el):
+                                        updateTime = update_time_el.text
+                                    poster["update_time"] = updateTime
+                                    driver.back()
+                                    
+                                data_list.append(poster.copy())
 
                             break
                     driver.back()

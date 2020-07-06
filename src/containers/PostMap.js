@@ -176,7 +176,8 @@ class PostMap extends Component {
                 }
             }
         ).then((data) => {
-            const postData = data ? data : require('./PostData.json');
+            // const postData = data ? data : require('./PostData.json');
+            const postData = data;
             for (var i = 0; i < postData.length; ++i) {
                 postData[i].waitingUpdateTime = new Date(postData[i].waitingUpdateTime);
                 postData[i].postDataUpdateTime = new Date(postData[i].postDataUpdateTime);
@@ -236,7 +237,7 @@ class PostMap extends Component {
                 NotificationManager.warning(message, title, 2000000, () => { this.getUserLocation(); });
                 break;
             case 'error':
-                NotificationManager.error(message, title, 5000, () => {
+                NotificationManager.error(message, title, 10000, () => {
                     this.setState({ redirect: true },
                         // setTimeout(this.setState({ redirect: false }), 100)
                     );
@@ -308,7 +309,7 @@ class PostMap extends Component {
                         break
                 }
             },
-            { enableHighAccuracy: true, maximumAge: 10000, timeout: 3000 }
+            { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
         );
 
         navigator.geolocation.watchPosition(
@@ -383,7 +384,8 @@ class PostMap extends Component {
         const { classes } = this.props;
 
         const markers = this.state.markers.map((i, id) => {
-            const makerIcon = PostOfficeMaker(this.state.postData[i.index].total, this.state.postData[i.index].people, i.index === this.state.focusedMark ? "#AA3939" : undefined);
+            const makerIcon = PostOfficeMaker(this.state.postData[i.index].total, this.state.postData[i.index].nowWaiting,
+                this.state.postData[i.index].people, i.index === this.state.focusedMark ? "#AA3939" : undefined);
             const popup = (i.index === this.state.focusedMark) ? (
                 <Tooltip direction='top' offset={[0, -55]} opacity={1} permanent>
                     <span>{this.state.postData[i.index].storeNm}</span>
@@ -435,7 +437,7 @@ class PostMap extends Component {
 
                             <div className={classes.mainInfoHolder}>
                                 <img aria-label="等待人數" style={{ width: 15, height: 15 }} src={p} />
-                                {`  等待人數: ${this.state.postData[i.index].nowWaiting}`}
+                                {`  等待人數: ${this.state.postData[i.index].nowWaiting === -1 ? "無資料" : this.state.postData[i.index].nowWaiting}`}
                                 <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
                                     {`(${this.state.postData[i.index].waitingUpdateTime.getMonth() + 1}/${this.state.postData[i.index].waitingUpdateTime.getDate()} 
                                 ${this.state.postData[i.index].waitingUpdateTime.getHours()}:${this.state.postData[i.index].waitingUpdateTime.getMinutes()} 更新)`}

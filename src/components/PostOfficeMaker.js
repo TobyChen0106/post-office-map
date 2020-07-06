@@ -81,6 +81,14 @@ const peopleHolder = `
 
 const PostOfficeMaker = (total, people, color = "#0058a3") => {
     const myStyle = markerHtmlStyles(color);
+    var mypeopleHolder = peopleHolder;
+    if (people === -1) {
+        mypeopleHolder = `
+        visibility: hidden;
+        display: none;
+    `
+    }
+
     return (
         new L.divIcon({
             className: "my-custom-pin",
@@ -97,8 +105,8 @@ const PostOfficeMaker = (total, people, color = "#0058a3") => {
                 <div style="${totalHolder}">
                     <img style="${kImage}" src="${k}"/> ${total ? total : 0}
                 </div>
-                <div style="${peopleHolder}">
-                    <img style="${kImage}" src="${p}"/> ${people ? people : 0}
+                <div style="${mypeopleHolder}">
+                    <img style="${kImage}" src="${p}"/> ${people ? people === -1 ? "無" : people : 0}
                 </div>
             </div>
             `
