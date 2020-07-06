@@ -6,6 +6,7 @@ import re
 import pickle
 from bson.objectid import ObjectId
 import datetime
+from pytz import timezone
 
 def load_obj(name ):
     with open(name, 'rb') as f:
@@ -24,11 +25,14 @@ phone_num = "0911234568"
 #     pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
 while(True):
+    time_now = datetime.datetime.now(timezone('Asia/Taipei'))
     try:
         data = parsePosterData(checkpage, phone_num, full=False)
     except:
         print("Exception!")
         continue
+
+    # data = parsePosterData(checkpage, phone_num, full=False)
     
     # insert data to db
     allPost = db.getData("postoffices")

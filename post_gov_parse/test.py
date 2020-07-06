@@ -1,8 +1,8 @@
 import datetime
+import time
+from pytz import timezone
 
-from datetime import timezone, datetime, timedelta
-
-d = datetime.now().astimezone(timezone.utc)
-print(d)
-print(d.strftime('%Y-%m-%dT%H:%M:%S.%fZ'))
-# d.astimezone(timezone.utc).strftime('%Y-%m-%d %H:%M:%S.%f')
+while True:
+    time_now = datetime.datetime.now(timezone('UTC'))
+    print(time_now.hour)
+    time.sleep(5)
