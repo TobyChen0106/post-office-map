@@ -194,14 +194,15 @@ class PostMap extends Component {
             );
             this.getUserLocation();
 
-            setTimeout(() => {
-                if (this.state.userLocation === new LatLng(25.042229, 121.5651594)) {
-                    console.log("haha")
-                    this.displayMarkers();
-                    this.setState({ loading: false });
-                    this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。點擊以獲得更多資訊。");
-                }
-            }, 1000);
+            // setTimeout(() => {
+            //     if (this.state.userLocation === new LatLng(25.042229, 121.5651594)) {
+            //         console.log("haha")
+            //         this.displayMarkers();
+            //         this.setState({ loading: false });
+            //         this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。點擊以獲得更多資訊。");
+            //     }
+            // }, 1000);
+
             // if (user) {
             //     this.getUserLocation();
             // } else {
@@ -289,25 +290,25 @@ class PostMap extends Component {
                     // PERMISSION_DENIED
                     case 1:
                         this.setState({ geoErrorCode: 1 });
-                        this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。點擊以獲得更多資訊。");
+                        this.createNotification("error", "無法取得使用者位置資訊", "請確認已開啟定位功能。點擊以獲得更多資訊。");
                         break
                     // POSITION_UNAVAILABLE
                     case 2:
                         this.setState({ geoErrorCode: 2 });
-                        this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。點擊以獲得更多資訊。");
+                        this.createNotification("error", "無法取得使用者位置資訊", "請確認已開啟定位功能。點擊以獲得更多資訊。");
                         break
                     // TIMEOUT
                     case 3:
                         this.setState({ geoErrorCode: 3 });
-                        this.createNotification("error", "無法取得使用者位置資訊", "請求逾時。");
+                        this.createNotification("error", "無法取得使用者位置資訊", "請確認已開啟定位功能。點擊以獲得更多資訊。");
                         break
                     default:
                         this.setState({ geoErrorCode: 2 });
-                        this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。點擊以獲得更多資訊。");
+                        this.createNotification("error", "無法取得使用者位置資訊", "請確認已開啟定位功能。點擊以獲得更多資訊。");
                         break
                 }
             },
-            { enableHighAccuracy: true, maximumAge: 10000 }
+            { enableHighAccuracy: true, maximumAge: 10000, timeout: 3000 }
         );
 
         navigator.geolocation.watchPosition(
