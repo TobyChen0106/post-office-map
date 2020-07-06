@@ -17,17 +17,22 @@ db = CardboDB(
 
 webpage = "https://ecounter.post.gov.tw/RS_PhoneLogin.aspx"
 checkpage = "https://ecounter.post.gov.tw/RS_OnlineNo_SelectBranch.aspx"
-phone_num = "0911234567"
+phone_num = "0911234568"
 
 # data = load_obj('data.pkl')
 # with open('data.pkl', 'wb') as f:
 #     pickle.dump(data, f, pickle.HIGHEST_PROTOCOL)
 
 while(True):
-    data = parsePosterData(checkpage, phone_num, full=False)
+    try:
+        data = parsePosterData(checkpage, phone_num, full=False)
+    except:
+        print("Exception!")
+        continue
+    
     # insert data to db
     allPost = db.getData("postoffices")
-    
+
     count = 0
     for p in allPost:
         # print(p["storeNm"])

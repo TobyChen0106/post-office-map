@@ -30,9 +30,7 @@ def parsePosterData(checkpage, phone_num="0123456789", num_poster = 616, full=Tr
     options = Options()
     options.headless = True
 
-    binary = FirefoxBinary('geckodriver.exe')
-
-    driver = webdriver.Firefox(firefox_binary=binary, options=options)
+    driver = webdriver.Firefox( options=options)
     driver.get(checkpage)
     data_list = []
 
