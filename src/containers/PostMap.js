@@ -191,10 +191,13 @@ class PostMap extends Component {
             );
             this.setState(
                 { postData: postData, allMarkers: allMarkers },
-                () => {
-                    // this.displayMarkers();
-                    // this.setState({ loading: false });
-                }
+                setTimeout(() => {
+                    if (this.state.userLocation === new LatLng(25.042229, 121.5651594)) {
+                        this.displayMarkers();
+                        this.setState({ loading: false });
+                        this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。點擊以獲得更多資訊。");
+                    }
+                }, 1000)
             );
             this.getUserLocation();
             // if (user) {
