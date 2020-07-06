@@ -27,7 +27,7 @@ def get_option_list(driver, id, exclude="請選擇"):
 
 def parsePosterData(checkpage, phone_num="0123456789", num_poster = 1739, full=True):
     options = Options()
-    options.headless = False
+    options.headless = True
     driver = webdriver.Firefox(options=options)
     driver.get(checkpage)
     data_list = []

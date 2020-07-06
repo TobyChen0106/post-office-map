@@ -1,19 +1,23 @@
-from firefox import * 
+from firefox import *
 import pymongo
-from bson import BSON 
-
-# connect to mongodb atlas
-client = pymongo.MongoClient("mongodb+srv://Toby0106:dbforcardbo@cluster0-gfwld.mongodb.net/test?retryWrites=true&w=majority")
-db = client["poster_api"]
-collect = db["poster"]
-
+from bson import BSON
+from CardboDB import CardboDB
+import re
+db = CardboDB(
+    "mongodb+srv://cardbo:69541@cardbo-br3ga.gcp.mongodb.net/dbCardbo?retryWrites=true&w=majority", "dbCardbo")
+# mongodb+srv://cardbo:<password>@cardbo-br3ga.gcp.mongodb.net/<dbname>?retryWrites=true&w=majority
 
 webpage = "https://ecounter.post.gov.tw/RS_PhoneLogin.aspx"
 checkpage = "https://ecounter.post.gov.tw/RS_OnlineNo_SelectBranch.aspx"
 phone_num = "0911805479"
-data = parsePosterData(checkpage, phone_num, full=False)
+# data = parsePosterData(checkpage, phone_num, full=False)
 
 # insert data to db
-for d in data:
-    post_id = collect.insert_one(d).inserted_id
-    print(len(data), ' card data postID:　',post_id)
+allPost = db.getData("postoffices")
+
+for p in allPost:
+    # print(p["storeNm"])
+    print(re.split(re.escape('('), p["storeNm"])[0])
+
+# for d in data:
+#     print(d.poster_name)

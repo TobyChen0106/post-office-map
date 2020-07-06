@@ -296,6 +296,10 @@ class PostMap extends Component {
                         this.setState({ geoErrorCode: 3 });
                         this.createNotification("error", "無法取得使用者位置資訊", "請求逾時。");
                         break
+                    default:
+                        this.setState({ geoErrorCode: 2 });
+                        this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。點擊以獲得更多資訊。");
+                        break
                 }
             },
             { enableHighAccuracy: true, maximumAge: 10000 }
@@ -418,7 +422,7 @@ class PostMap extends Component {
                                 <img aria-label="三倍券存量" style={{ width: 15, height: 15 }} src={k} />
                                 {`  三倍券存量: ${this.state.postData[i.index].total}`}
                                 <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
-                                    {`(${this.state.postData[i.index].postDataUpdateTime.getMonth()+1}/${this.state.postData[i.index].postDataUpdateTime.getDate()} 
+                                    {`(${this.state.postData[i.index].postDataUpdateTime.getMonth() + 1}/${this.state.postData[i.index].postDataUpdateTime.getDate()} 
                                 ${this.state.postData[i.index].postDataUpdateTime.getHours()}:${this.state.postData[i.index].postDataUpdateTime.getMinutes()} 更新)`}
                                 </Typography>
                             </div>
@@ -427,7 +431,7 @@ class PostMap extends Component {
                                 <img aria-label="等待人數" style={{ width: 15, height: 15 }} src={p} />
                                 {`  等待人數: ${this.state.postData[i.index].nowWaiting}`}
                                 <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
-                                    {`(${this.state.postData[i.index].waitingUpdateTime.getMonth()+1}/${this.state.postData[i.index].waitingUpdateTime.getDate()} 
+                                    {`(${this.state.postData[i.index].waitingUpdateTime.getMonth() + 1}/${this.state.postData[i.index].waitingUpdateTime.getDate()} 
                                 ${this.state.postData[i.index].waitingUpdateTime.getHours()}:${this.state.postData[i.index].waitingUpdateTime.getMinutes()} 更新)`}
                                 </Typography>
                             </div>

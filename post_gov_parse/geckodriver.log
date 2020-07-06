@@ -1253,3 +1253,20 @@ JavaScript error: chrome://marionette/content/proxy.js, line 222: TypeError: thi
 
 ###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
 
+1593984478080	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "-marionette" "-foreground" "-no-remote" "-profile" "C:\\Users\\Toby\\AppData\\Local\\Temp\\rust_mozprofilegTvefr"
+JavaScript error: resource://gre/modules/XULStore.jsm, line 66: Error: Can't find profile directory.
+1593984479506	Marionette	INFO	Listening on port 62528
+1593984479587	Marionette	WARN	TLS certificate errors will be ignored for this session
+1593984484515	Marionette	INFO	Stopped listening on port 62528
+
+###!!! [Child][RunMessage] Error: Channel closing: too late to send/recv, messages will be lost
+
+
+###!!! [Child][MessageChannel::SendAndWait] Error: Channel error: cannot send/recv
+
+1593984531695	mozrunner::runner	INFO	Running command: "C:\\Program Files\\Mozilla Firefox\\firefox.exe" "-marionette" "-headless" "-foreground" "-no-remote" "-profile" "C:\\Users\\Toby\\AppData\\Local\\Temp\\rust_mozprofilei93cyA"
+*** You are running in headless mode.
+JavaScript error: resource://gre/modules/XULStore.jsm, line 66: Error: Can't find profile directory.
+1593984532931	Marionette	INFO	Listening on port 62656
+1593984533207	Marionette	WARN	TLS certificate errors will be ignored for this session
+1593984648444	Marionette	INFO	Stopped listening on port 62656
