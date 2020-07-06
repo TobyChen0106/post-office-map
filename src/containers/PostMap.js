@@ -1,16 +1,14 @@
 import React, { Component } from 'react';
-import { Redirect, Route, Switch } from "react-router-dom";
+import { Redirect } from "react-router-dom";
 import { withStyles } from '@material-ui/core/styles';
 import ReactLoading from 'react-loading';
 import { LatLng } from 'leaflet';
-
 import {
     Map,
     Marker,
     TileLayer,
     Tooltip,
 } from 'react-leaflet'
-import ReactTimeAgo from 'react-time-ago'
 import PostOfficeMaker from '../components/PostOfficeMaker';
 import UserMaker from '../components/UserMaker';
 import Carousel from 'react-multi-carousel';
@@ -20,21 +18,13 @@ import Card from '@material-ui/core/Card';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
-import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
-import MoreVertIcon from '@material-ui/icons/MoreVert';
 import GpsFixedIcon from '@material-ui/icons/GpsFixed';
-import SvgIcon from '@material-ui/core/SvgIcon';
 import Divider from '@material-ui/core/Divider';
-import Menu from '@material-ui/core/Menu';
-import MenuItem from '@material-ui/core/MenuItem';
-import myTooltip from '@material-ui/core/Tooltip';
 import k from "../assets/3k.svg"
 import p from "../assets/people.svg"
-
 import postOffcieImage from "../assets/post-office-icon.png";
-
 import 'react-notifications/lib/notifications.css';
 import { NotificationContainer, NotificationManager } from 'react-notifications';
 
@@ -162,8 +152,6 @@ class PostMap extends Component {
     }
 
     componentWillMount = () => {
-
-
         fetch('/api/getData').catch(function (error) {
             console.log("[Error] " + error);
         }).then(
@@ -178,55 +166,58 @@ class PostMap extends Component {
                 }
             }
         ).then((data) => {
-            // const postData = data ? data : require('./PostData.json');
-            if (data) {
-                const postData = data;
-                for (var i = 0; i < postData.length; ++i) {
-                    postData[i].waitingUpdateTime = new Date(postData[i].waitingUpdateTime);
-                    postData[i].postDataUpdateTime = new Date(postData[i].postDataUpdateTime);
-                }
-
-                const cardboPosition = this.state.userLocation;
-                var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
-                    function compareDistnace(a, b) {
-                        return (Math.pow(cardboPosition.lat - a.position.lat, 2) + Math.pow(cardboPosition.lng - a.position.lng, 2))
-                            - (Math.pow(cardboPosition.lat - b.position.lat, 2) + Math.pow(cardboPosition.lng - b.position.lng, 2));
-                    }
-                );
-                this.setState(
-                    { postData: postData, allMarkers: allMarkers }
-                );
-                this.getUserLocation();
-
-                // setTimeout(() => {
-                //     if (this.state.userLocation === new LatLng(25.042229, 121.5651594)) {
-                //         console.log("haha")
-                //         this.displayMarkers();
-                //         this.setState({ loading: false });
-                //         this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。點擊以獲得更多資訊。");
-                //     }
-                // }, 1000);
-
-                // if (user) {
-                //     this.getUserLocation();
-                // } else {
-
-                //     this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位");
-                // }
-                // if (navigator.permissions) {
-                //     navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
-                //         if (permissionStatus.state === "prompt") {
-                //             this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位")
-                //         } else {
-                //             this.getUserLocation();
-                //         }
-                //     });
-                // } else {
-                //     this.getUserLocation();
-                // }
+            const postData = data ? data : require('./PostData.json');
+            for (var i = 0; i < postData.length; ++i) {
+                var waitingDate = new Date(postData[i].waitingUpdateTime);
+                var dataDate = new Date(postData[i].postDataUpdateTime);
+                waitingDate.setHours(waitingDate.getHours() - 8);
+                dataDate.setHours(dataDate.getHours() - 8);
+                postData[i].waitingUpdateTime = waitingDate;
+                postData[i].postDataUpdateTime = dataDate;
             }
+
+            const cardboPosition = this.state.userLocation;
+            var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
+                function compareDistnace(a, b) {
+                    return (Math.pow(cardboPosition.lat - a.position.lat, 2) + Math.pow(cardboPosition.lng - a.position.lng, 2))
+                        - (Math.pow(cardboPosition.lat - b.position.lat, 2) + Math.pow(cardboPosition.lng - b.position.lng, 2));
+                }
+            );
+            this.setState(
+                { postData: postData, allMarkers: allMarkers }
+            );
+            this.getUserLocation();
+
+            // setTimeout(() => {
+            //     if (this.state.userLocation === new LatLng(25.042229, 121.5651594)) {
+            //         console.log("haha")
+            //         this.displayMarkers();
+            //         this.setState({ loading: false });
+            //         this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。點擊以獲得更多資訊。");
+            //     }
+            // }, 1000);
+
+            // if (user) {
+            //     this.getUserLocation();
+            // } else {
+
+            //     this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位");
+            // }
+            // if (navigator.permissions) {
+            //     navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
+            //         if (permissionStatus.state === "prompt") {
+            //             this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位")
+            //         } else {
+            //             this.getUserLocation();
+            //         }
+            //     });
+            // } else {
+            //     this.getUserLocation();
+            // }
+
         });
     }
+
     componentDidMount = () => {
         setInterval(() => {
             fetch('/api/getData').catch(function (error) {
@@ -248,13 +239,15 @@ class PostMap extends Component {
                     const postData = data;
                     var prePostData = this.state.postData;
                     for (var i = 0; i < postData.length; ++i) {
-                        postData[i].waitingUpdateTime = new Date(postData[i].waitingUpdateTime);
-                        postData[i].postDataUpdateTime = new Date(postData[i].postDataUpdateTime);
+                        var waitingDate = new Date(postData[i].waitingUpdateTime);
+                        var dataDate = new Date(postData[i].postDataUpdateTime);
+                        waitingDate.setHours(waitingDate.getHours() - 8);
+                        dataDate.setHours(dataDate.getHours() - 8);
 
                         const id = prePostData.findIndex(p => p.storeCd === postData[i].storeCd)
                         if (id != -1) {
-                            prePostData[id].waitingUpdateTime = postData[i].waitingUpdateTime;
-                            prePostData[id].postDataUpdateTime = postData[i].postDataUpdateTime;
+                            prePostData[id].waitingUpdateTime = waitingDate;
+                            prePostData[id].postDataUpdateTime = dataDate;
                             prePostData[id].total = postData[i].total;
                             prePostData[id].nowCalling = postData[i].nowCalling;
                             prePostData[id].nowWaiting = postData[i].nowWaiting;
@@ -265,6 +258,7 @@ class PostMap extends Component {
             });
         }, 30000);
     }
+
     createNotification = (type, title, message) => {
         console.log(type, title, message)
         switch (type) {
@@ -305,8 +299,7 @@ class PostMap extends Component {
                 this.setState(
                     { allMarkers: allMarkers },
                     () => {
-                        this.displayMarkers();
-                        this.setState({ loading: false });
+                        this.setState({ loading: false }, () => { this.displayMarkers(); });
                     }
                 );
             },
@@ -323,8 +316,7 @@ class PostMap extends Component {
                 this.setState(
                     { allMarkers: allMarkers },
                     () => {
-                        this.displayMarkers();
-                        this.setState({ loading: false });
+                        this.setState({ loading: false }, () => { this.displayMarkers(); });
                     }
                 );
 
@@ -365,62 +357,56 @@ class PostMap extends Component {
     }
 
     displayMarkers = () => {
-        // if (this.state.loading) return;
-        if (this.autopan) {
-            this.autopan = false;
-            setTimeout(() => {
-                const map = this.mapRef.current.leafletElement;
-                const markers = this.state.allMarkers.map(
-                    (m, i) => map.getBounds().contains(m.position) ? { index: m.id, position: m.position } : undefined).filter(x => x);
+        setTimeout(() => {
+            const map = this.mapRef.current.leafletElement;
+            const markers = this.state.allMarkers.map(
+                (m, i) => map.getBounds().contains(m.position) ? { index: m.id, position: m.position } : undefined).filter(x => x);
 
-                const newCenter = this.state.focusedMarker ? this.state.focusedMarker.position : this.state.userLocation;
-                
+            var newCenter = this.state.userLocation;
+            const findCenterMarkId = markers.findIndex(m => m.index === this.state.focusedMark);
+
+            if (!this.state.focusedMark || (markers.length > 0 && findCenterMarkId === -1)) {
                 this.setState({
-                    markers: markers.sort(
-                        function compareDistnace(a, b) {
-                            return (Math.pow(newCenter.lat - a.position.lat, 2) + Math.pow(newCenter.lng - a.position.lng, 2))
-                                - (Math.pow(newCenter.lat - b.position.lat, 2) + Math.pow(newCenter.lng - b.position.lng, 2));
-                        }
-                    )
-                })
+                    focusedMark: markers[0].index
+                });
+                newCenter = markers[0].position;
+            } else {
+                newCenter = markers[findCenterMarkId].position;
+            }
 
-                if (!this.state.focusedMark || (markers.length > 0 && markers.findIndex(m => m.index === this.state.focusedMark) === -1)) {
-                    this.setState({
-                        focusedMark: markers[0].index
-                    });
-                }
-
-                this.autopan = true;
-            }, 100)
-        }
-    }
-
-    onCarouselChange = (currentSlide) => {
-        var id = currentSlide - 2;
-        if (id < 0) {
-            id = this.state.markers.length + id
-        }
-        this.setState(pre => {
-            return ({
-                focusedMark: pre.markers[id].index
-            })
-        });
-    }
-
-    handleMarkerClick = (id) => {
-        this.setState({ focusedMark: id });
-        const focusedMarker = this.state.markers.find(m => m.index === id)
-        if (focusedMarker) {
-            const newCenter = focusedMarker.position;
             this.setState({
-                markers: this.state.markers.sort(
+                markers: markers.sort(
                     function compareDistnace(a, b) {
                         return (Math.pow(newCenter.lat - a.position.lat, 2) + Math.pow(newCenter.lng - a.position.lng, 2))
                             - (Math.pow(newCenter.lat - b.position.lat, 2) + Math.pow(newCenter.lng - b.position.lng, 2));
                     }
                 )
             })
+        }, 300);
+    }
 
+    onCarouselChange = (currentSlide) => {
+        const id = currentSlide - 2 < 0 ? this.state.markers.length + currentSlide - 2 : currentSlide - 2;
+        this.setState({
+            focusedMark: this.state.markers[id].index
+        });
+    }
+
+    handleMarkerClick = (id) => {
+        this.setState({ focusedMark: id });
+        const newfocusedMark = this.state.markers.find(m => m.index === id)
+        if (newfocusedMark) {
+            const newCenter = newfocusedMark.position;
+            this.setState(pre => {
+                return ({
+                    markers: pre.markers.sort(
+                        function compareDistnace(a, b) {
+                            return (Math.pow(newCenter.lat - a.position.lat, 2) + Math.pow(newCenter.lng - a.position.lng, 2))
+                                - (Math.pow(newCenter.lat - b.position.lat, 2) + Math.pow(newCenter.lng - b.position.lng, 2));
+                        }
+                    )
+                })
+            });
         }
     }
 
@@ -478,25 +464,25 @@ class PostMap extends Component {
                         <Typography variant="subtitle2" component="p" className={classes.mainInfoTypography}>
                             <div className={classes.mainInfoHolder}>
                                 <img aria-label="三倍券存量" style={{ width: 15, height: 15 }} src={k} />
-                                {`  三倍券存量: ${this.state.postData[i.index].total}`}
+                                {` 三倍券存量: ${ this.state.postData[i.index].total === -1 ? ` 無資料` : this.state.postData[i.index].total}`}
                                 <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
-                                    {`(${this.state.postData[i.index].postDataUpdateTime.getMonth() + 1}/${this.state.postData[i.index].postDataUpdateTime.getDate()} 
-                                ${this.state.postData[i.index].postDataUpdateTime.getHours() - 8}:${this.state.postData[i.index].postDataUpdateTime.getMinutes()} 更新)`}
+                                    {this.state.postData[i.index].total === -1 ? `` :
+                                        `(${this.state.postData[i.index].postDataUpdateTime.getMonth() + 1}/${this.state.postData[i.index].postDataUpdateTime.getDate()} 
+                                ${this.state.postData[i.index].postDataUpdateTime.getHours()}:${this.state.postData[i.index].postDataUpdateTime.getMinutes()} 更新)`}
                                 </Typography>
                             </div>
 
                             <div className={classes.mainInfoHolder}>
                                 <img aria-label="等待人數" style={{ width: 15, height: 15 }} src={p} />
-                                {`  等待人數: ${this.state.postData[i.index].nowWaiting === -1 ? "無資料" : this.state.postData[i.index].nowWaiting}`}
+                                {`  等待人數: ${this.state.postData[i.index].nowWaiting === -1 ? ` 無資料` : this.state.postData[i.index].nowWaiting}`}
                                 <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
                                     {this.state.postData[i.index].nowWaiting === -1 ? `` :
                                         `(${this.state.postData[i.index].waitingUpdateTime.getMonth() + 1}/${this.state.postData[i.index].waitingUpdateTime.getDate()} 
-                                    ${this.state.postData[i.index].waitingUpdateTime.getHours() - 8}:${this.state.postData[i.index].waitingUpdateTime.getMinutes()} 更新)`
+                                    ${this.state.postData[i.index].waitingUpdateTime.getHours()}:${this.state.postData[i.index].waitingUpdateTime.getMinutes()} 更新)`
                                     }
                                 </Typography>
                             </div>
                         </Typography>
-
 
                         <Typography variant="body2" color="textSecondary" component="p">
                             {memo}

@@ -17,8 +17,8 @@ db.once('open', () => {
 
 const file_path = "./PostData.json";
 
-var json = require('./o.PostData.json'); 
-console.log(json.length)
+// var json = require('./o.PostData.json'); 
+// console.log(json.length)
 // for (var i = 0; i < json.length; ++i) {
 //     json[i].nowCalling = 0;
 //     json[i].nowWaiting = 0;
@@ -43,7 +43,12 @@ PostOffice.find({}, (err, data) => {
     else if (!data) {
         console.log("[ERROR] EMPTY DATA!");
     } else {
-        console.log(data)
-        // fs.writeFile(file_path, JSON.stringify(data), 'utf8', () => console.log(`successfully dump offer to ${file_path}`)) 
+        console.log(data.length)
+        for (var i = 0; i < data.length; ++i) {
+            data[i].total = -1;
+            data[i].nowCalling = -1;
+            data[i].nowWaiting = -1;
+        }
+        fs.writeFile(file_path, JSON.stringify(data), 'utf8', () => console.log(`successfully dump offer to ${file_path}`))
     }
 })
