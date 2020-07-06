@@ -7,6 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.firefox.options import Options
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 
 def printProgressBar (iteration, total, prefix = '', suffix = '', decimals = 1, length = 100, fill = '█', printEnd = "\r"):
     percent = ("{0:." + str(decimals) + "f}").format(100 * (iteration / float(total)))
@@ -28,7 +29,10 @@ def get_option_list(driver, id, exclude="請選擇"):
 def parsePosterData(checkpage, phone_num="0123456789", num_poster = 616, full=True):
     options = Options()
     options.headless = True
-    driver = webdriver.Firefox(options=options)
+
+    binary = FirefoxBinary('geckodriver.exe')
+
+    driver = webdriver.Firefox(firefox_binary=binary, options=options)
     driver.get(checkpage)
     data_list = []
 

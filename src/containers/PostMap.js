@@ -331,17 +331,27 @@ class PostMap extends Component {
                 const map = this.mapRef.current.leafletElement;
                 const markers = this.state.allMarkers.map(
                     (m, i) => map.getBounds().contains(m.position) ? { index: m.id, position: m.position } : undefined).filter(x => x);
+
+                const newCenter = focusedMarker? focusedMarker.position : userLocation;
                 this.setState({
-                    markers: markers,
-                });
+                    markers: this.state.markers.sort(
+                        function compareDistnace(a, b) {
+                            return (Math.pow(newCenter.lat - a.position.lat, 2) + Math.pow(newCenter.lng - a.position.lng, 2))
+                                - (Math.pow(newCenter.lat - b.position.lat, 2) + Math.pow(newCenter.lng - b.position.lng, 2));
+                        }
+                    )
+                })
 
                 if (!this.state.focusedMark || (markers.length > 0 && markers.findIndex(m => m.index === this.state.focusedMark) === -1)) {
                     this.setState({
+                        markers: markers,
                         focusedMark: markers[0].index
                     });
+                }else{
+                    
                 }
                 this.autopan = true;
-            }, 10)
+            }, 100)
         }
     }
 
@@ -489,7 +499,7 @@ class PostMap extends Component {
                 <>
                     <Map
                         autopanstart={this.onautopanstart}
-                        onMoveEnd={() => this.displayMarkers(false)}
+                        onMoveEnd={() => this.displayMarkers()}
                         ref={this.mapRef}
                         center={this.state.centerLocation}
                         zoom={15}
