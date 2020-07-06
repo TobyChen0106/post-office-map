@@ -154,6 +154,7 @@ class PostMap extends Component {
             geoErrorCode: 0,
             userData: undefined,
             redirect: false,
+            postData: []
         }
         this.carouselRef = React.createRef();
         this.mapRef = React.createRef();
@@ -161,6 +162,7 @@ class PostMap extends Component {
     }
 
     componentWillMount = () => {
+
 
         fetch('/api/getData').catch(function (error) {
             console.log("[Error] " + error);
@@ -177,53 +179,92 @@ class PostMap extends Component {
             }
         ).then((data) => {
             // const postData = data ? data : require('./PostData.json');
-            const postData = data;
-            for (var i = 0; i < postData.length; ++i) {
-                postData[i].waitingUpdateTime = new Date(postData[i].waitingUpdateTime);
-                postData[i].postDataUpdateTime = new Date(postData[i].postDataUpdateTime);
-            }
-
-            const cardboPosition = this.state.userLocation;
-            var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
-                function compareDistnace(a, b) {
-                    return (Math.pow(cardboPosition.lat - a.position.lat, 2) + Math.pow(cardboPosition.lng - a.position.lng, 2))
-                        - (Math.pow(cardboPosition.lat - b.position.lat, 2) + Math.pow(cardboPosition.lng - b.position.lng, 2));
+            if (data) {
+                const postData = data;
+                for (var i = 0; i < postData.length; ++i) {
+                    postData[i].waitingUpdateTime = new Date(postData[i].waitingUpdateTime);
+                    postData[i].postDataUpdateTime = new Date(postData[i].postDataUpdateTime);
                 }
-            );
-            this.setState(
-                { postData: postData, allMarkers: allMarkers }
-            );
-            this.getUserLocation();
 
-            // setTimeout(() => {
-            //     if (this.state.userLocation === new LatLng(25.042229, 121.5651594)) {
-            //         console.log("haha")
-            //         this.displayMarkers();
-            //         this.setState({ loading: false });
-            //         this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。點擊以獲得更多資訊。");
-            //     }
-            // }, 1000);
+                const cardboPosition = this.state.userLocation;
+                var allMarkers = postData.map((v, id) => ({ position: new LatLng(v.latitude, v.longitude), id: id })).sort(
+                    function compareDistnace(a, b) {
+                        return (Math.pow(cardboPosition.lat - a.position.lat, 2) + Math.pow(cardboPosition.lng - a.position.lng, 2))
+                            - (Math.pow(cardboPosition.lat - b.position.lat, 2) + Math.pow(cardboPosition.lng - b.position.lng, 2));
+                    }
+                );
+                this.setState(
+                    { postData: postData, allMarkers: allMarkers }
+                );
+                this.getUserLocation();
 
-            // if (user) {
-            //     this.getUserLocation();
-            // } else {
+                // setTimeout(() => {
+                //     if (this.state.userLocation === new LatLng(25.042229, 121.5651594)) {
+                //         console.log("haha")
+                //         this.displayMarkers();
+                //         this.setState({ loading: false });
+                //         this.createNotification("error", "無法取得使用者位置資訊", "請求遭到拒絕，請確認已開啟定位功能。點擊以獲得更多資訊。");
+                //     }
+                // }, 1000);
 
-            //     this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位");
-            // }
-            // if (navigator.permissions) {
-            //     navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
-            //         if (permissionStatus.state === "prompt") {
-            //             this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位")
-            //         } else {
-            //             this.getUserLocation();
-            //         }
-            //     });
-            // } else {
-            //     this.getUserLocation();
-            // }
+                // if (user) {
+                //     this.getUserLocation();
+                // } else {
+
+                //     this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位");
+                // }
+                // if (navigator.permissions) {
+                //     navigator.permissions.query({ name: 'geolocation' }).then((permissionStatus) => {
+                //         if (permissionStatus.state === "prompt") {
+                //             this.createNotification("warning", "點一下授權", "卡伯郵局地圖需要您現在的位置以提供定位")
+                //         } else {
+                //             this.getUserLocation();
+                //         }
+                //     });
+                // } else {
+                //     this.getUserLocation();
+                // }
+            }
         });
     }
+    componentDidMount = () => {
+        setInterval(() => {
+            fetch('/api/getData').catch(function (error) {
+                console.log("[Error] " + error);
+            }).then(
+                res => {
+                    if (res.ok) {
+                        this.setState({ fetchData: true });
+                        return res.json()
+                    }
+                    else {
+                        this.createNotification("error", "無法載入資料", "請確認網路連線狀況");
+                        return null;
+                    }
+                }
+            ).then((data) => {
+                // const postData = data ? data : require('./PostData.json');
+                if (data) {
+                    const postData = data;
+                    var prePostData = this.state.postData;
+                    for (var i = 0; i < postData.length; ++i) {
+                        postData[i].waitingUpdateTime = new Date(postData[i].waitingUpdateTime);
+                        postData[i].postDataUpdateTime = new Date(postData[i].postDataUpdateTime);
 
+                        const id = prePostData.findIndex(p => p.storeCd === postData[i].storeCd)
+                        if (id != -1) {
+                            prePostData[id].waitingUpdateTime = postData[i].waitingUpdateTime;
+                            prePostData[id].postDataUpdateTime = postData[i].postDataUpdateTime;
+                            prePostData[id].total = postData[i].total;
+                            prePostData[id].nowCalling = postData[i].nowCalling;
+                            prePostData[id].nowWaiting = postData[i].nowWaiting;
+                        }
+                    }
+                    this.setState({ postData: prePostData })
+                }
+            });
+        }, 30000);
+    }
     createNotification = (type, title, message) => {
         console.log(type, title, message)
         switch (type) {
@@ -332,9 +373,10 @@ class PostMap extends Component {
                 const markers = this.state.allMarkers.map(
                     (m, i) => map.getBounds().contains(m.position) ? { index: m.id, position: m.position } : undefined).filter(x => x);
 
-                const newCenter = focusedMarker? focusedMarker.position : userLocation;
+                const newCenter = this.state.focusedMarker ? this.state.focusedMarker.position : this.state.userLocation;
+                
                 this.setState({
-                    markers: this.state.markers.sort(
+                    markers: markers.sort(
                         function compareDistnace(a, b) {
                             return (Math.pow(newCenter.lat - a.position.lat, 2) + Math.pow(newCenter.lng - a.position.lng, 2))
                                 - (Math.pow(newCenter.lat - b.position.lat, 2) + Math.pow(newCenter.lng - b.position.lng, 2));
@@ -344,12 +386,10 @@ class PostMap extends Component {
 
                 if (!this.state.focusedMark || (markers.length > 0 && markers.findIndex(m => m.index === this.state.focusedMark) === -1)) {
                     this.setState({
-                        markers: markers,
                         focusedMark: markers[0].index
                     });
-                }else{
-                    
                 }
+
                 this.autopan = true;
             }, 100)
         }
