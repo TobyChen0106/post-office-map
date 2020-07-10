@@ -92,6 +92,7 @@ const useStyles = (theme) => ({
     mainInfoTypographyHolder:{
         display: "flex",
         justifyContent: "space-between",
+        marginBottom: "1rem"
     },
     mainInfoHolder: {
         display: "flex column",
