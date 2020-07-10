@@ -474,7 +474,7 @@ class PostMap extends Component {
                         subheader={Parser(this.state.postData[i.index].busiTime)}
                     />
                     <CardContent className={classes.CardContent}>
-                        <Typography style={{ fontSize: "0.5rem" }} className={classes.mainInfoTypographyHolder}>
+                        <Typography variant="body2" className={classes.mainInfoTypographyHolder}>
                             <div className={classes.mainInfoHolder}>
                                 <img aria-label="三倍券存量" style={{ width: 15, height: 15 }} src={k} />
                                 {` 三倍券存量: ${this.state.postData[i.index].total === -1 ? ` 無資料` : this.state.postData[i.index].total}`}
