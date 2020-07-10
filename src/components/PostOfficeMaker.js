@@ -79,11 +79,11 @@ const peopleHolder = `
     box-shadow: 0 0 6px 4px rgba(0, 0, 0, 0.5);
 `
 
-const PostOfficeMaker = (total, people, color = "#0058a3") => {
+const PostOfficeMaker = (total, s_people, p_people, color = "#0058a3") => {
     const myStyle = markerHtmlStyles(color);
     var mypeopleHolder = peopleHolder;
     var mytotalHolder = totalHolder;
-    if (people === -1) {
+    if (s_people === -1 && p_people === -1) {
         mypeopleHolder = `
         visibility: hidden;
         display: none;
@@ -112,7 +112,8 @@ const PostOfficeMaker = (total, people, color = "#0058a3") => {
                     <img style="${kImage}" src="${k}"/> ${total ? total : 0}
                 </div>
                 <div style="${mypeopleHolder}">
-                    <img style="${kImage}" src="${p}"/> ${people ? people === -1 ? "無" : people : 0}
+                    <img style="${kImage}" src="${p}"/> 
+                    ${s_people ? s_people === -1 ? `x` : s_people : 0}/${p_people ? p_people === -1 ? `x` : p_people : 0}
                 </div>
             </div>
             `

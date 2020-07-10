@@ -26,13 +26,7 @@ phone_num = "0911234568"
 
 while(True):
     time_now = datetime.datetime.now(timezone('Asia/Taipei'))
-    try:
-        data = parsePosterData(checkpage, phone_num, full=False)
-    except:
-        print("Exception!")
-        continue
-
-    # data = parsePosterData(checkpage, phone_num, full=False)
+    data = parsePosterData(checkpage, phone_num, full=False)
     
     # insert data to db
     allPost = db.getData("postoffices")

@@ -62,9 +62,9 @@ const useStyles = (theme) => ({
     },
     carouselCard: {
         // margin: "5%",
-        marginLeft: "5%",
-        marginRight: "5%",
-        width: "90%",
+        // marginLeft: "2%",
+        // marginRight: "2%",
+        width: "100%",
         height: "10rem",
         overflow: "scroll",
     },
@@ -89,6 +89,10 @@ const useStyles = (theme) => ({
     markers: {
         zIndex: "1000",
     },
+    mainInfoTypographyHolder:{
+        display: "flex",
+        justifyContent: "space-between",
+    },
     mainInfoHolder: {
         display: "flex column",
         alignItems: "center",
@@ -96,10 +100,12 @@ const useStyles = (theme) => ({
     },
     mainInfoTypography: {
         display: "flex",
-        justifyContent: "space-between"
+        // alignItems: "center",
+        justifyContent: "center",
     },
     CardContent: {
-        paddingTop: 0
+        paddingTop: 0,
+        textAlign: "center"
     },
     Divider: {
         margin: "1rem",
@@ -168,11 +174,14 @@ class PostMap extends Component {
         ).then((data) => {
             const postData = data ? data : require('./PostData.json');
             for (var i = 0; i < postData.length; ++i) {
-                var waitingDate = new Date(postData[i].waitingUpdateTime);
+                var s_waitingDate = new Date(postData[i].s_waitingUpdateTime);
+                var p_waitingDate = new Date(postData[i].p_waitingUpdateTime);
                 var dataDate = new Date(postData[i].postDataUpdateTime);
-                waitingDate.setHours(waitingDate.getHours() - 8);
+                s_waitingDate.setHours(s_waitingDate.getHours() - 8);
+                p_waitingDate.setHours(p_waitingDate.getHours() - 8);
                 dataDate.setHours(dataDate.getHours() - 8);
-                postData[i].waitingUpdateTime = waitingDate;
+                postData[i].s_waitingUpdateTime = s_waitingDate;
+                postData[i].p_waitingUpdateTime = p_waitingDate;
                 postData[i].postDataUpdateTime = dataDate;
             }
 
@@ -239,18 +248,22 @@ class PostMap extends Component {
                     const postData = data;
                     var prePostData = this.state.postData;
                     for (var i = 0; i < postData.length; ++i) {
-                        var waitingDate = new Date(postData[i].waitingUpdateTime);
+                        var p_waitingDate = new Date(postData[i].p_waitingUpdateTime);
+                        p_waitingDate.setHours(p_waitingDate.getHours() - 8);
+                        var s_waitingDate = new Date(postData[i].s_waitingUpdateTime);
+                        s_waitingDate.setHours(s_waitingDate.getHours() - 8);
+
                         var dataDate = new Date(postData[i].postDataUpdateTime);
-                        waitingDate.setHours(waitingDate.getHours() - 8);
                         dataDate.setHours(dataDate.getHours() - 8);
 
                         const id = prePostData.findIndex(p => p.storeCd === postData[i].storeCd)
                         if (id != -1) {
-                            prePostData[id].waitingUpdateTime = waitingDate;
+                            prePostData[id].p_waitingUpdateTime = p_waitingDate;
+                            prePostData[id].s_waitingUpdateTime = s_waitingDate;
                             prePostData[id].postDataUpdateTime = dataDate;
                             prePostData[id].total = postData[i].total;
-                            prePostData[id].nowCalling = postData[i].nowCalling;
-                            prePostData[id].nowWaiting = postData[i].nowWaiting;
+                            prePostData[id].p_nowCalling = postData[i].p_nowCalling;
+                            prePostData[id].s_nowWaiting = postData[i].s_nowWaiting;
                         }
                     }
                     this.setState({ postData: prePostData })
@@ -419,8 +432,8 @@ class PostMap extends Component {
     render() {
         const { classes } = this.props;
 
-        const markers = this.state.markers.map((i, id) => {
-            const makerIcon = PostOfficeMaker(this.state.postData[i.index].total, this.state.postData[i.index].nowWaiting,
+        const markers = this.state.markers.filter((m, i) => i < 50).map((i, id) => {
+            const makerIcon = PostOfficeMaker(this.state.postData[i.index].total, this.state.postData[i.index].s_nowWaiting, this.state.postData[i.index].p_nowWaiting,
                 i.index === this.state.focusedMark ? "#AA3939" : undefined);
             const popup = (i.index === this.state.focusedMark) ? (
                 <Tooltip direction='top' offset={[0, -55]} opacity={1} permanent>
@@ -461,11 +474,11 @@ class PostMap extends Component {
                         subheader={Parser(this.state.postData[i.index].busiTime)}
                     />
                     <CardContent className={classes.CardContent}>
-                        <Typography variant="subtitle2" component="p" className={classes.mainInfoTypography}>
+                        <Typography style={{ fontSize: "0.5rem" }} className={classes.mainInfoTypographyHolder}>
                             <div className={classes.mainInfoHolder}>
                                 <img aria-label="三倍券存量" style={{ width: 15, height: 15 }} src={k} />
-                                {` 三倍券存量: ${ this.state.postData[i.index].total === -1 ? ` 無資料` : this.state.postData[i.index].total}`}
-                                <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
+                                {` 三倍券存量: ${this.state.postData[i.index].total === -1 ? ` 無資料` : this.state.postData[i.index].total}`}
+                                <Typography style={{ fontSize: "0.5rem" }} className={classes.mainInfoTypography}>
                                     {this.state.postData[i.index].total === -1 ? `` :
                                         `(${this.state.postData[i.index].postDataUpdateTime.getMonth() + 1}/${this.state.postData[i.index].postDataUpdateTime.getDate()} 
                                 ${this.state.postData[i.index].postDataUpdateTime.getHours()}:${this.state.postData[i.index].postDataUpdateTime.getMinutes()} 更新)`}
@@ -473,12 +486,22 @@ class PostMap extends Component {
                             </div>
 
                             <div className={classes.mainInfoHolder}>
-                                <img aria-label="等待人數" style={{ width: 15, height: 15 }} src={p} />
-                                {`  等待人數: ${this.state.postData[i.index].nowWaiting === -1 ? ` 無資料` : this.state.postData[i.index].nowWaiting}`}
-                                <Typography variant="body2" component="p" className={classes.mainInfoTypography}>
-                                    {this.state.postData[i.index].nowWaiting === -1 ? `` :
-                                        `(${this.state.postData[i.index].waitingUpdateTime.getMonth() + 1}/${this.state.postData[i.index].waitingUpdateTime.getDate()} 
-                                    ${this.state.postData[i.index].waitingUpdateTime.getHours()}:${this.state.postData[i.index].waitingUpdateTime.getMinutes()} 更新)`
+                                <img aria-label="儲匯業務" style={{ width: 15, height: 15 }} src={p} />
+                                {`儲匯業務: ${this.state.postData[i.index].s_nowWaiting === -1 ? ` 無資料` : this.state.postData[i.index].s_nowWaiting}`}
+                                <Typography style={{ fontSize: "0.5rem" }} className={classes.mainInfoTypography}>
+                                    {this.state.postData[i.index].s_nowWaiting === -1 ? `` :
+                                        `(${this.state.postData[i.index].s_waitingUpdateTime.getMonth() + 1}/${this.state.postData[i.index].s_waitingUpdateTime.getDate()} 
+                                    ${this.state.postData[i.index].s_waitingUpdateTime.getHours()}:${this.state.postData[i.index].s_waitingUpdateTime.getMinutes()} 更新)`
+                                    }
+                                </Typography>
+                            </div>
+                            <div className={classes.mainInfoHolder}>
+                                <img aria-label="郵務業務" style={{ width: 15, height: 15 }} src={p} />
+                                {`  郵務業務: ${this.state.postData[i.index].p_nowWaiting === -1 ? ` 無資料` : this.state.postData[i.index].p_nowWaiting}`}
+                                <Typography style={{ fontSize: "0.5rem" }} className={classes.mainInfoTypography}>
+                                    {this.state.postData[i.index].p_nowWaiting === -1 ? `` :
+                                        `(${this.state.postData[i.index].p_waitingUpdateTime.getMonth() + 1}/${this.state.postData[i.index].p_waitingUpdateTime.getDate()} 
+                                    ${this.state.postData[i.index].p_waitingUpdateTime.getHours()}:${this.state.postData[i.index].p_waitingUpdateTime.getMinutes()} 更新)`
                                     }
                                 </Typography>
                             </div>
@@ -578,6 +601,4 @@ class PostMap extends Component {
         }
     }
 };
-
-
 export default withStyles(useStyles)(PostMap)
